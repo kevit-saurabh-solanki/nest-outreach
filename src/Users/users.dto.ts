@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsString, IsNumber, IsOptional, IsBoolean, IsDate } from "class-validator";
+import { IsEmail, IsNotEmpty, IsString, IsNumber, IsOptional, IsBoolean } from "class-validator";
 import mongoose from "mongoose";
 
 export class UsersDto {
@@ -24,8 +24,5 @@ export class UsersDto {
     @IsOptional()
     @IsBoolean()  
     isAdmin?: boolean
-
-    @IsDate()
-    createdAt: Date;
 
 }

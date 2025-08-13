@@ -15,7 +15,7 @@ export class UsersService {
             if (foundUser) throw new ConflictException; //409
             const newUser = new this.usersModel(UsersDto);
             const savedUser = await newUser.save();
-            const { createdAt, isAdmin, ...savedUserDto } = savedUser;
+            const { isAdmin, ...savedUserDto } = savedUser;
             return { ...savedUserDto };
         }
         catch (err) {
@@ -67,7 +67,7 @@ export class UsersService {
         try {
             const findUser = await this.usersModel.findOne({ _id: userId }).exec();
             if (!findUser) throw new NotFoundException;
-            const { createdAt, _id, isAdmin, ...updateUserDto } = findUser; 
+            const { _id, isAdmin, ...updateUserDto } = findUser; 
             const editedUser = await this.usersModel.findOneAndUpdate({ _id: userId }, { ...updateUserDto }, { returnDocument: "after" }).exec();
             if (!editedUser) throw new NotFoundException;
             return { edit_userId: editedUser._id, edit_email: editedUser.email, edit_role: editedUser.role, edit_workspaceId: editedUser.workspaceId };

@@ -23,7 +23,7 @@ export class UsersSchema {
     isAdmin?: boolean
 
     @Prop({ required: true, type: Date, default: new Date().toISOString() })
-    createdAt: Date;
+    createdAt: string;
 
 }
 
