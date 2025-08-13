@@ -1,0 +1,60 @@
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import * as mongoose from 'mongoose';
+
+@Schema() 
+export class UsersSchema {
+
+    @Prop({ required: true, default: new mongoose.Types.ObjectId() })
+    _id: mongoose.Schema.Types.ObjectId;
+
+    @Prop({ required: true, unique: true })
+    email: string;
+
+    @Prop({ required: true })
+    password: string;
+
+    @Prop({ required: true, enum: ['editor', 'viewer'] })
+    role: string;
+
+    @Prop({ required: true, ref: 'WorkspaceSchema' })
+    workspaceId: number;
+
+    @Prop({ required: false })
+    isAdmin?: boolean
+
+    @Prop({ required: true, type: Date, default: new Date().toISOString })
+    createdAt: Date;
+
+}
+
+export const usersSchema = SchemaFactory.createForClass(UsersSchema);
+
+
+    // @IsEmail()
+    // @IsNotEmpty()
+    // @Prop({ required: true, unique: true })
+    // email: string;
+
+    // @IsString()
+    // @IsNotEmpty()
+    // @Prop({ required: true })
+    // password: string;
+
+    // @IsString()
+    // @IsNotEmpty()
+    // @Prop({ required: true, enum: ['editor', 'viewer'] })
+    // role: string;
+
+    // @IsNumber()
+    // @IsNotEmpty()
+    // @Prop({ required: true, ref: 'WorkspaceSchema' })
+    // workspace_id: number;
+
+    // @IsOptional()
+    // @IsBoolean()
+    // @Prop({ required: false })
+    // isAdmin?: boolean
+
+    // @IsDate()
+    // @Prop({ required: true, type: Date, default: new Date().toISOString })
+    // createdAt: Date;
