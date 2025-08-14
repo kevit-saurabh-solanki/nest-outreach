@@ -19,10 +19,26 @@ export class UsersDto {
 
     @IsNumber()
     @IsNotEmpty() 
-    workspace_id: number;
+    workspaceId: number;
 
     @IsOptional()
     @IsBoolean()  
     isAdmin?: boolean
 
+}
+
+export class updateUserDto {
+
+    @IsEmail() 
+    email: string;
+
+    @IsString()
+    password: string;
+
+    @IsString()
+    role: string;
+
+    @IsNumber()
+    workspaceId: number;
+    
 }

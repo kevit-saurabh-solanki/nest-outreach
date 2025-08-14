@@ -15,3 +15,13 @@ export class WorkspaceDto {
     description: string;
 
 }
+
+export class UpdateWorkspaceDto {
+
+    @IsString()
+    name: string;
+
+    @IsString()
+    description: string;
+
+}

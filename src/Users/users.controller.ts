@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Post, Put } from "@nestjs/common";
 import { UsersService } from "./users.service";
-import { UsersDto } from "./users.dto";
+import { updateUserDto, UsersDto } from "./users.dto";
 import mongoose from "mongoose";
 
 @Controller('users')
@@ -28,7 +28,7 @@ export class UsersControl {
     }
 
     @Put('/:userId')
-    editUserById(@Param('userId') userId: mongoose.Schema.Types.ObjectId) {
-        return this.usersService.editUser(userId);
+    editUserById(@Param('userId') userId: mongoose.Schema.Types.ObjectId, @Body() updateUserDto: updateUserDto) {
+        return this.usersService.editUser(userId, updateUserDto);
     }
 }

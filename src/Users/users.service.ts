@@ -2,7 +2,7 @@ import { ConflictException, HttpException, Injectable, InternalServerErrorExcept
 import { InjectModel } from "@nestjs/mongoose";
 import { UsersSchema } from "./users.schema";
 import mongoose, { Model } from "mongoose";
-import { UsersDto } from "./users.dto";
+import { updateUserDto, UsersDto } from "./users.dto";
 
 @Injectable()
 export class UsersService {
@@ -11,7 +11,7 @@ export class UsersService {
     //Add users--------------------------------------------------------------------
     async addUser(addUser: UsersDto) {
         try {
-            const foundUser = await this.usersModel.findOne({ $and: [{ email: addUser.email }, { workspaceId: addUser.workspace_id }] }).exec();
+            const foundUser = await this.usersModel.findOne({ $and: [{ email: addUser.email }, { workspaceId: addUser.workspaceId }] }).exec();
             if (foundUser) throw new ConflictException; //409
             const newUser = new this.usersModel(UsersDto);
             const savedUser = await newUser.save();
@@ -63,12 +63,9 @@ export class UsersService {
     }
 
     //edit a user-----------------------------------------------------------
-    async editUser(userId: mongoose.Schema.Types.ObjectId) {
+    async editUser(userId: mongoose.Schema.Types.ObjectId, updateUserDto: updateUserDto) {
         try {
-            const findUser = await this.usersModel.findOne({ _id: userId }).exec();
-            if (!findUser) throw new NotFoundException;
-            const { _id, isAdmin, ...updateUserDto } = findUser; 
-            const editedUser = await this.usersModel.findOneAndUpdate({ _id: userId }, { ...updateUserDto }, { returnDocument: "after" }).exec();
+            const editedUser = await this.usersModel.findOneAndUpdate({ _id: userId }, { updateUserDto }, { returnDocument: "after" }).exec();
             if (!editedUser) throw new NotFoundException;
             return { edit_userId: editedUser._id, edit_email: editedUser.email, edit_role: editedUser.role, edit_workspaceId: editedUser.workspaceId };
         }
