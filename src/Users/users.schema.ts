@@ -16,8 +16,8 @@ export class UsersSchema {
     @Prop({ required: true, enum: ['editor', 'viewer'] })
     role: string;
 
-    @Prop({ required: true, ref: 'WorkspaceSchema' })
-    workspaceId: number;
+    @Prop({ required: false, ref: 'WorkspaceSchema' })
+    workspaceId?: number;
 
     @Prop({ required: false })
     isAdmin?: boolean

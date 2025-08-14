@@ -2,7 +2,6 @@ import { Body, Controller, Delete, Get, Param, Post, Put, Req, UseGuards } from 
 import { UsersService } from "./users.service";
 import { updateUserDto, UsersDto } from "./users.dto";
 import mongoose from "mongoose";
-import type { Request } from "express";
 import { AuthGuard } from "src/Auth/auth.guard";
 
 @Controller('users')
@@ -10,13 +9,13 @@ export class UsersControl {
     constructor(private usersService: UsersService) { }
 
     @Post()
-    @UseGuards(AuthGuard)
-    addUser(@Body() userDto: UsersDto, @Req() req: any) {
+    // @UseGuards(AuthGuard)
+    async addUser(@Body() userDto: UsersDto, @Req() req: any) {
         return this.usersService.addUser(userDto, req);
     }
 
     @Get()
-    @UseGuards(AuthGuard)
+    // @UseGuards(AuthGuard)
     getUser(@Req() req: any) {
         return this.usersService.getAllUsers(req);
     }

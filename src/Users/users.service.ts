@@ -12,22 +12,13 @@ export class UsersService {
     //Add users-----------------------------------------------------------------------
     async addUser({ password, ...userData }: UsersDto, req: any) {
         try {
-            const isAdmin = req.users.isAdmin;
-            if (!isAdmin) throw new UnauthorizedException;
+            // const isAdmin = req.users.isAdmin;
+            // if (!isAdmin) throw new UnauthorizedException;
             const foundUser = await this.usersModel.findOne({ $and: [{ email: userData.email }, { workspaceId: userData.workspaceId }] }).exec();
             if (foundUser) throw new ConflictException; //409
-            bcrypt.hash(password, 10, async (e, hashedPass) => {
-                if (e) {
-                    console.log(e);
-                    throw new InternalServerErrorException;
-                }
-                else {
-                    const newUser = new this.usersModel({ password: hashedPass, ...userData });
-                    const savedUser = await newUser.save();
-                    const { isAdmin, ...savedUserDto } = savedUser;
-                    return { savedUserDto };
-                }
-            })
+            const hashedPass = await bcrypt.hash(password, 10);
+            const newUser = new this.usersModel({ password: hashedPass, ...userData });
+            return newUser.save();
         }
         catch (err) {
             console.log(err);
@@ -38,8 +29,8 @@ export class UsersService {
     //Get all users------------------------------------------------------------------
     async getAllUsers(req: any) {
         try {
-            const isAdmin = req.users.isAdmin;
-            if (!isAdmin) throw new UnauthorizedException;
+            // const isAdmin = req.users.isAdmin;
+            // if (!isAdmin) throw new UnauthorizedException;
             const allUsers = await this.usersModel.find({}, { _id: 1, email: 1, role: 1, workspaceId: 1 }).exec();
             return allUsers;
         }
