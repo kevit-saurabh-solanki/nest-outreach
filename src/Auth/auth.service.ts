@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from "@nestjs/common";
+import { HttpException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { AuthDto } from "./auth.dto";
 import { InjectModel } from "@nestjs/mongoose";
 import { UsersSchema } from "src/Users/users.schema";
@@ -13,7 +13,7 @@ export class AuthService {
     async loginUser({ email, password }: AuthDto) {
         try {
             const findUser = await this.usersModel.findOne({ email: email }).exec();
-            if (!findUser) throw new NotFoundException;
+            if (!findUser) throw new HttpException("User Not found", 404);
 
             const compareResult = await bcrypt.compare(password, findUser.password);
             if (compareResult) {
@@ -22,13 +22,12 @@ export class AuthService {
                 return token;
             }
             else {
-                throw new UnauthorizedException;
+                throw new HttpException("Unauthorized Access", 401);
             }
 
         }
         catch (err) {
             console.log(err);
-            throw new InternalServerErrorException;
         }
     }
 }

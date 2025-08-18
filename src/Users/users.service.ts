@@ -16,17 +16,17 @@ export class UsersService {
             const isAdmin = req.users.isAdmin;
             if (!isAdmin) throw new UnauthorizedException;
             const foundUser = await this.usersModel.findOne({ $and: [{ email: userData.email }, { workspaceId: userData.workspaceId }] }).exec();
-            if (foundUser) throw new ConflictException; //409
+            if (foundUser) throw new ConflictException("user already exist in the specified workspace"); //409
             const { workspaceId } = userData;
             const foundWorkspace = await this.workspaceModel.findById(workspaceId).exec();
-            if (!foundWorkspace) throw new NotFoundException;
+            if (!foundWorkspace) throw new NotFoundException("workspace not found");
             const hashedPass = await bcrypt.hash(password, 10);
             const newUser = new this.usersModel({ password: hashedPass, ...userData });
             return newUser.save();
         }
         catch (err) {
             console.log(err);
-            throw new InternalServerErrorException; //500
+            return err;
         }
     }
 
@@ -40,7 +40,7 @@ export class UsersService {
         }
         catch (err) {
             console.log(err);
-            throw new InternalServerErrorException; //500
+            return err; //500
         }
     }
 
@@ -50,12 +50,12 @@ export class UsersService {
             const isAdmin = req.users.isAdmin;
             if (!isAdmin) throw new UnauthorizedException;
             const findUser = await this.usersModel.findOne({ _id: userId }, { _id: 1, email: 1, role: 1, workspaceId: 1 }).populate("workspaceId").exec();
-            if (!findUser) throw new NotFoundException;
+            if (!findUser) throw new NotFoundException("User not found");
             return findUser;
         }
         catch (err) {
             console.log(err);
-            throw new InternalServerErrorException; //500
+            return err; //500
         }
     }
 
@@ -65,12 +65,12 @@ export class UsersService {
             const isAdmin = req.users.isAdmin;
             if (!isAdmin) throw new UnauthorizedException;
             const deletedUser = await this.usersModel.findOneAndDelete({ _id: userId }, { returnDocument: "after" }).exec()
-            if (!deletedUser) throw new NotFoundException;
+            if (!deletedUser) throw new NotFoundException("User not found");
             return { deleted_userId: deletedUser._id, deleted_email: deletedUser.email, deleted_role: deletedUser.role, deleted_workspaceId: deletedUser.workspaceId };
         }
         catch (err) {
             console.log(err);
-            throw new InternalServerErrorException; //500
+            return err; //500
         }
     }
 
@@ -82,12 +82,12 @@ export class UsersService {
             const { password } = updateUserDto;
             const editHashedPass = await bcrypt.hash(password, 10);
             const editedUser = await this.usersModel.findOneAndUpdate({ _id: userId }, {  ...updateUserDto, password: editHashedPass }, { returnDocument: "after" }).exec();
-            if (!editedUser) throw new NotFoundException;
+            if (!editedUser) throw new NotFoundException("User not found");
             return { edit_userId: editedUser._id, edit_email: editedUser.email, edit_role: editedUser.role, edit_workspaceId: editedUser.workspaceId };
         }
         catch (err) {
             console.log(err);
-            throw new InternalServerErrorException; //500
+            return err;
         }
     }
 

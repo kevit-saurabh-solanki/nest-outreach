@@ -14,14 +14,14 @@ export class WorkspaceService {
             const isAdmin = req.users.isAdmin;
             if (!isAdmin) throw new UnauthorizedException;
             const findWorkspace = await this.workspaceModel.findOne({ _id: workspaceDto._id }).exec();
-            if (findWorkspace) throw new ConflictException;
+            if (findWorkspace) throw new ConflictException("workspace already exist");
             const newWorkspace = new this.workspaceModel(workspaceDto);
             const savedWorkspace = await newWorkspace.save();
             return savedWorkspace;
         }
         catch (err) {
             console.log(err);
-            throw new InternalServerErrorException;
+            return err;
         }
     }
 
@@ -35,7 +35,7 @@ export class WorkspaceService {
         }
         catch (err) {
             console.log(err);
-            throw new InternalServerErrorException;
+            return err;
         }
     }
 
@@ -45,12 +45,12 @@ export class WorkspaceService {
             const isAdmin = req.users.isAdmin;
             if (!isAdmin) throw new UnauthorizedException;
             const findWorkspace = await this.workspaceModel.findOne({ _id: workspaceId }, { createdAt: 0 }).exec();
-            if (!findWorkspace) throw new NotFoundException
+            if (!findWorkspace) throw new NotFoundException("workspace not found");
             return findWorkspace;
         }
         catch (err) {
             console.log(err);
-            throw new InternalServerErrorException;
+            return err;
         }
     }
 
@@ -60,12 +60,12 @@ export class WorkspaceService {
             const isAdmin = req.users.isAdmin;
             if (!isAdmin) throw new UnauthorizedException;
             const deleteWorkspace = await this.workspaceModel.findOneAndDelete({ _id: workspaceId }, { returnDocument: "after" }).exec();
-            if (!deleteWorkspace) throw new NotFoundException;
+            if (!deleteWorkspace) throw new NotFoundException("workspace not found");
             return deleteWorkspace;
         }
         catch (err) {
             console.log(err);
-            throw new InternalServerErrorException;
+            return err;
         }
     }
 
@@ -75,12 +75,12 @@ export class WorkspaceService {
             const isAdmin = req.users.isAdmin;     
             if (!isAdmin) throw new UnauthorizedException;
             const editWorkspace = await this.workspaceModel.findOneAndUpdate({ _id: workspaceId }, { ...updateWorkspaceDto }, { returnDocument: "after" }).exec();          
-            if (!editWorkspace) throw new NotFoundException;
+            if (!editWorkspace) throw new NotFoundException("workspace not found");
             return editWorkspace;
         }
         catch (err) {
             console.log(err);
-            throw new InternalServerErrorException;
+            return err;
         }
     }
 }
