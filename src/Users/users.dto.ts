@@ -17,10 +17,9 @@ export class UsersDto {
     @IsNotEmpty()
     role: string;
 
-    // @IsNumber()
-    // @IsNotEmpty() 
-    @IsOptional()
-    workspaceId?: number;
+    @IsNumber()
+    @IsNotEmpty() 
+    workspaceId: number;
 
     @IsOptional()
     @IsBoolean()  

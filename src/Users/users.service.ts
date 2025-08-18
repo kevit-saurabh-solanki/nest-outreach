@@ -4,10 +4,11 @@ import { UsersSchema } from "./users.schema";
 import mongoose, { Model } from "mongoose";
 import { updateUserDto, UsersDto } from "./users.dto";
 import * as bcrypt from "bcrypt";
+import { WorkspaceSchema } from "src/Workspace/workspace.schema";
 
 @Injectable()
 export class UsersService {
-    constructor(@InjectModel(UsersSchema.name) private usersModel: Model<UsersSchema>) { }
+    constructor(@InjectModel(UsersSchema.name) private usersModel: Model<UsersSchema>, @InjectModel(WorkspaceSchema.name) private workspaceModel: Model<WorkspaceSchema>) { }
 
     //Add users-----------------------------------------------------------------------
     async addUser({ password, ...userData }: UsersDto, req: any) {
@@ -16,6 +17,9 @@ export class UsersService {
             if (!isAdmin) throw new UnauthorizedException;
             const foundUser = await this.usersModel.findOne({ $and: [{ email: userData.email }, { workspaceId: userData.workspaceId }] }).exec();
             if (foundUser) throw new ConflictException; //409
+            const { workspaceId } = userData;
+            const foundWorkspace = await this.workspaceModel.findById(workspaceId).exec();
+            if (!foundWorkspace) throw new NotFoundException;
             const hashedPass = await bcrypt.hash(password, 10);
             const newUser = new this.usersModel({ password: hashedPass, ...userData });
             return newUser.save();
@@ -45,7 +49,7 @@ export class UsersService {
         try {
             const isAdmin = req.users.isAdmin;
             if (!isAdmin) throw new UnauthorizedException;
-            const findUser = await this.usersModel.findOne({ _id: userId }, { _id: 1, email: 1, role: 1, workspaceId: 1 }).exec();
+            const findUser = await this.usersModel.findOne({ _id: userId }, { _id: 1, email: 1, role: 1, workspaceId: 1 }).populate("workspaceId").exec();
             if (!findUser) throw new NotFoundException;
             return findUser;
         }
@@ -71,11 +75,13 @@ export class UsersService {
     }
 
     //edit a user---------------------------------------------------------------------
-    async editUser(userId: mongoose.Schema.Types.ObjectId, updateUserDto: updateUserDto, req: any) {
+    async editUser(userId: mongoose.Schema.Types.ObjectId, {...updateUserDto}: updateUserDto, req: any) {
         try {
             const isAdmin = req.users.isAdmin;
             if (!isAdmin) throw new UnauthorizedException;
-            const editedUser = await this.usersModel.findOneAndUpdate({ _id: userId }, { updateUserDto }, { returnDocument: "after" }).exec();
+            const { password } = updateUserDto;
+            const editHashedPass = await bcrypt.hash(password, 10);
+            const editedUser = await this.usersModel.findOneAndUpdate({ _id: userId }, {  ...updateUserDto, password: editHashedPass }, { returnDocument: "after" }).exec();
             if (!editedUser) throw new NotFoundException;
             return { edit_userId: editedUser._id, edit_email: editedUser.email, edit_role: editedUser.role, edit_workspaceId: editedUser.workspaceId };
         }
