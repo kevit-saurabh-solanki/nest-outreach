@@ -75,15 +75,17 @@ export class UsersService {
     }
 
     //edit a user---------------------------------------------------------------------
-    async editUser(userId: mongoose.Schema.Types.ObjectId, {...updateUserDto}: updateUserDto, req: any) {
+    async editUser(userId: mongoose.Schema.Types.ObjectId, { password , ...updateUserDto }: updateUserDto, req: any) {
         try {
             const isAdmin = req.users.isAdmin;
             if (!isAdmin) throw new UnauthorizedException;
-            const { password } = updateUserDto;
-            const editHashedPass = await bcrypt.hash(password, 10);
-            const editedUser = await this.usersModel.findOneAndUpdate({ _id: userId }, {  ...updateUserDto, password: editHashedPass }, { returnDocument: "after" }).exec();
-            if (!editedUser) throw new NotFoundException("User not found");
-            return { edit_userId: editedUser._id, edit_email: editedUser.email, edit_role: editedUser.role, edit_workspaceId: editedUser.workspaceId };
+            if (password) {
+                const editHashedPass = await bcrypt.hash(password, 10);
+                const editedUser = await this.usersModel.findOneAndUpdate({ _id: userId }, { password: editHashedPass }, { returnDocument: "after" }).exec();
+                if (!editedUser) throw new NotFoundException("User not found");
+            }
+            const editedUser = await this.usersModel.findOneAndUpdate({_id: userId}, { ...updateUserDto }, { returnDocument: "after" }).exec();
+            return editedUser;
         }
         catch (err) {
             console.log(err);
