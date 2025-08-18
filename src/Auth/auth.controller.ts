@@ -7,8 +7,8 @@ export class AuthControl {
     constructor(private authService: AuthService) {}
 
     @Post()
-    loginUser(@Body() authDto: AuthDto)  {
-       const token = this.authService.loginUser(authDto);
+    async loginUser(@Body() authDto: AuthDto)  {
+       const token = await this.authService.loginUser(authDto);
        return { access_token: token };
     }
 }

@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Get, Param, Delete, Put, UseGuards, Req } from "@nestjs/common";
+import { Body, Controller, Post, Get, Param, Delete, Put, UseGuards, Req, ParseIntPipe } from "@nestjs/common";
 import { WorkspaceService } from "./workspace.service";
 import { UpdateWorkspaceDto, WorkspaceDto } from "./workspace.dto";
 import { AuthGuard } from "src/Auth/auth.guard";
@@ -19,21 +19,21 @@ export class WorkspaceControl {
         return this.workspaceService.getAllWorkspace(req);
     }
 
-    @Get(':workspceId')
+    @Get(':workspaceId')
     @UseGuards(AuthGuard)
-    getWorkspaceById(@Param('workspaceId') workspaceId: number, @Req() req: any) {
+    getWorkspaceById(@Param('workspaceId', ParseIntPipe) workspaceId: number, @Req() req: any) {
         return this.workspaceService.getWorkspaceById(workspaceId, req);
     }
 
-    @Delete(':workspceId')
+    @Delete(':workspaceId')
     @UseGuards(AuthGuard)
-    deleteWorkspaceById(@Param('workspaceId') workspaceId: number, @Req() req: any) {
+    deleteWorkspaceById(@Param('workspaceId', ParseIntPipe) workspaceId: number, @Req() req: any) {
         return this.workspaceService.deleteWorkspaceById(workspaceId, req);
     }
 
-    @Put(':workspceId')
+    @Put(':workspaceId')
     @UseGuards(AuthGuard)
-    editWorkspaceById(@Param('workspaceId') workspaceId: number, updateWorkspaceDto: UpdateWorkspaceDto, @Req() req: any) {
+    editWorkspaceById(@Param('workspaceId') workspaceId: number,@Body() updateWorkspaceDto: UpdateWorkspaceDto, @Req() req: any) {
         return this.workspaceService.editWorkspaceById(workspaceId, updateWorkspaceDto, req);
     }
 }

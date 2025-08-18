@@ -15,23 +15,18 @@ export class AuthService {
             const findUser = await this.usersModel.findOne({ email: email }).exec();
             if (!findUser) throw new NotFoundException;
 
-            bcrypt.compare(password, findUser.password, (e, result) => {
-                if (e) {
-                    console.log(e);
-                    throw new InternalServerErrorException;
-                }
+            const compareResult = await bcrypt.compare(password, findUser.password);
+            if (compareResult) {
+                const payload = { _id:findUser._id, usernaem: findUser.email, isAdmin: findUser.isAdmin, role: findUser.role };
+                const token = this.jwtService.sign(payload);
+                return token;
+            }
+            else {
+                throw new UnauthorizedException;
+            }
 
-                if (result) {
-                    const { password, isAdmin, ...payload } = findUser;
-                    const token = this.jwtService.sign(payload);
-                    return token;
-                }
-                else {
-                    throw new UnauthorizedException;
-                }
-            })
         }
-        catch(err) {
+        catch (err) {
             console.log(err);
             throw new InternalServerErrorException;
         }

@@ -70,11 +70,11 @@ export class WorkspaceService {
     }
 
     //edit a workspace by Id---------------------------------------------------------
-    async editWorkspaceById(workspaceId: number, updateWorkspaceDto: UpdateWorkspaceDto, req: any) {
+    async editWorkspaceById(workspaceId: number, {...updateWorkspaceDto}: UpdateWorkspaceDto, req: any) {
         try {
-            const isAdmin = req.users.isAdmin;
+            const isAdmin = req.users.isAdmin;     
             if (!isAdmin) throw new UnauthorizedException;
-            const editWorkspace = await this.workspaceModel.findOneAndUpdate({ _id: workspaceId }, { updateWorkspaceDto }, { returnDocument: "after" }).exec();
+            const editWorkspace = await this.workspaceModel.findOneAndUpdate({ _id: workspaceId }, { ...updateWorkspaceDto }, { returnDocument: "after" }).exec();          
             if (!editWorkspace) throw new NotFoundException;
             return editWorkspace;
         }
