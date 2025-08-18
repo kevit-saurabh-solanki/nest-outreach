@@ -3,10 +3,14 @@ import { InjectModel } from "@nestjs/mongoose";
 import { ContactsSchema } from "./contacts.schema";
 import mongoose, { Model } from "mongoose"
 import { ContactsDto, UpdateContactsDto } from "./contacts.dto";
+import { UsersSchema } from "src/Users/users.schema";
+import { WorkspaceSchema } from "src/Workspace/workspace.schema";
 
 @Injectable()
 export class ContactsService {
-    constructor(@InjectModel(ContactsSchema.name) private contactModel: Model<ContactsSchema>) { }
+    constructor(@InjectModel(ContactsSchema.name) private contactModel: Model<ContactsSchema>,
+                @InjectModel(UsersSchema.name) private userModel: Model<UsersSchema>,
+                @InjectModel(WorkspaceSchema.name) private workspaceModel: Model<WorkspaceSchema>) { }
 
     //get all contacts------------------------------------------------------------
     async getAllContacts(req: any) {
@@ -40,6 +44,11 @@ export class ContactsService {
             if (role === "viewer") throw new UnauthorizedException;
             const findContact = await this.contactModel.findOne({ $and: [{ phoneNumber: contactDto.phoneNumber }, { workspaceId: contactDto.workspaceId }] }).exec();
             if (findContact) throw new ConflictException("Contact already exist in the workspace");
+            const { workspaceId, createdBy } = contactDto;
+            const findUser = await this.userModel.findById(createdBy).exec();
+            if (!findUser) throw new NotFoundException("User not found");
+            const findWorkspace = await this.workspaceModel.findById(workspaceId).exec();
+            if (!findWorkspace) throw new NotFoundException("Workspace not found");
             const newContact = new this.contactModel(contactDto);
             const savedContact = await newContact.save();
             return savedContact;
