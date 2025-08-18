@@ -4,9 +4,10 @@ import { usersSchema, UsersSchema } from "./users.schema";
 import { UsersControl } from "./users.controller";
 import { UsersService } from "./users.service";
 import { workspaceSchema, WorkspaceSchema } from "src/Workspace/workspace.schema";
+import { JwtModule } from "@nestjs/jwt";
 
 @Module({
-    imports: [
+    imports: [UsersSchema,
         MongooseModule.forFeature([
             {
                 name: UsersSchema.name,
@@ -16,7 +17,11 @@ import { workspaceSchema, WorkspaceSchema } from "src/Workspace/workspace.schema
                 name: WorkspaceSchema.name,
                 schema: workspaceSchema
             }
-        ])
+        ]),
+        JwtModule.register({
+            secret: 'secret',
+            signOptions: { expiresIn: "1h" }
+        })
     ],
     controllers: [UsersControl],
     providers: [UsersService]

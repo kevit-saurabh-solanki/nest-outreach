@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from "@nestjs/common";
+import { Body, Controller, HttpException, Post } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { AuthDto } from "./auth.dto";
 
@@ -7,8 +7,9 @@ export class AuthControl {
     constructor(private authService: AuthService) {}
 
     @Post()
-    loginUser(@Body() authDto: AuthDto)  {
-       const token = this.authService.loginUser(authDto);
+    async loginUser(@Body() authDto: AuthDto)  {
+       const token = await this.authService.loginUser(authDto);
+       if (!token) throw new HttpException("Unauthorized Access", 401);
        return { access_token: token };
     }
 }

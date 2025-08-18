@@ -1,33 +1,39 @@
-import { Body, Controller, Post, Get, Param, Delete, Put } from "@nestjs/common";
+import { Body, Controller, Post, Get, Param, Delete, Put, UseGuards, Req, ParseIntPipe } from "@nestjs/common";
 import { WorkspaceService } from "./workspace.service";
 import { UpdateWorkspaceDto, WorkspaceDto } from "./workspace.dto";
+import { AuthGuard } from "src/Auth/auth.guard";
 
 @Controller('workspaces')
 export class WorkspaceControl {
-    constructor(private workspaceService: WorkspaceService) {}
+    constructor(private workspaceService: WorkspaceService) { }
 
     @Post()
-    createWorkspace(@Body() workspaceDto: WorkspaceDto) {
-        return this.workspaceService.createWorkspace(workspaceDto);
+    @UseGuards(AuthGuard)
+    createWorkspace(@Body() workspaceDto: WorkspaceDto, @Req() req: any) {
+        return this.workspaceService.createWorkspace(workspaceDto, req);
     }
 
     @Get()
-    getAllWorkspace() {
-        return this.workspaceService.getAllWorkspace();
+    @UseGuards(AuthGuard)
+    getAllWorkspace(@Req() req: any) {
+        return this.workspaceService.getAllWorkspace(req);
     }
 
-    @Get(':workspceId')
-    getWorkspaceById(@Param('workspaceId') workspaceId: number) {
-        return this.workspaceService.getWorkspaceById(workspaceId);
+    @Get(':workspaceId')
+    @UseGuards(AuthGuard)
+    getWorkspaceById(@Param('workspaceId', ParseIntPipe) workspaceId: number, @Req() req: any) {
+        return this.workspaceService.getWorkspaceById(workspaceId, req);
     }
 
-    @Delete(':workspceId')
-    deleteWorkspaceById(@Param('workspaceId') workspaceId: number) {
-        return this.workspaceService.deleteWorkspaceById(workspaceId);
+    @Delete(':workspaceId')
+    @UseGuards(AuthGuard)
+    deleteWorkspaceById(@Param('workspaceId', ParseIntPipe) workspaceId: number, @Req() req: any) {
+        return this.workspaceService.deleteWorkspaceById(workspaceId, req);
     }
 
-    @Put(':workspceId')
-    editWorkspaceById(@Param('workspaceId') workspaceId: number, updateWorkspaceDto: UpdateWorkspaceDto) {
-        return this.workspaceService.editWorkspaceById(workspaceId, updateWorkspaceDto);
+    @Put(':workspaceId')
+    @UseGuards(AuthGuard)
+    editWorkspaceById(@Param('workspaceId') workspaceId: number,@Body() updateWorkspaceDto: UpdateWorkspaceDto, @Req() req: any) {
+        return this.workspaceService.editWorkspaceById(workspaceId, updateWorkspaceDto, req);
     }
 }

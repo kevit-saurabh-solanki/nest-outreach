@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from "@nestjs/common";
+import { HttpException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { AuthDto } from "./auth.dto";
 import { InjectModel } from "@nestjs/mongoose";
 import { UsersSchema } from "src/Users/users.schema";
@@ -13,27 +13,21 @@ export class AuthService {
     async loginUser({ email, password }: AuthDto) {
         try {
             const findUser = await this.usersModel.findOne({ email: email }).exec();
-            if (!findUser) throw new NotFoundException;
+            if (!findUser) throw new HttpException("User Not found", 404);
 
-            bcrypt.compare(password, findUser.password, (e, result) => {
-                if (e) {
-                    console.log(e);
-                    throw new InternalServerErrorException;
-                }
+            const compareResult = await bcrypt.compare(password, findUser.password);
+            if (compareResult) {
+                const payload = { _id:findUser._id, usernaem: findUser.email, isAdmin: findUser.isAdmin, role: findUser.role };
+                const token = this.jwtService.sign(payload);
+                return token;
+            }
+            else {
+                throw new HttpException("Unauthorized Access", 401);
+            }
 
-                if (result) {
-                    const { password, isAdmin, ...payload } = findUser;
-                    const token = this.jwtService.sign(payload);
-                    return token;
-                }
-                else {
-                    throw new UnauthorizedException;
-                }
-            })
         }
-        catch(err) {
+        catch (err) {
             console.log(err);
-            throw new InternalServerErrorException;
         }
     }
 }

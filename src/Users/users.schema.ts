@@ -4,9 +4,6 @@ import * as mongoose from 'mongoose';
 @Schema() 
 export class UsersSchema {
 
-    @Prop({ required: true, default: new mongoose.Types.ObjectId() })
-    _id: mongoose.Schema.Types.ObjectId;
-
     @Prop({ required: true, unique: true })
     email: string;
 
@@ -16,8 +13,8 @@ export class UsersSchema {
     @Prop({ required: true, enum: ['editor', 'viewer'] })
     role: string;
 
-    @Prop({ required: true, ref: 'WorkspaceSchema' })
-    workspaceId: number;
+    @Prop({ required: false, ref: 'WorkspaceSchema' })
+    workspaceId?: number;
 
     @Prop({ required: false })
     isAdmin?: boolean
