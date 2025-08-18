@@ -4,9 +4,6 @@ import mongoose from "mongoose";
 @Schema()
 export class ContactsSchema {
 
-    @Prop({ required: true, default: new mongoose.Types.ObjectId() })
-    _id: mongoose.Schema.Types.ObjectId;
-
     @Prop({ required: true })
     name: string;
 
@@ -17,7 +14,7 @@ export class ContactsSchema {
     tags: string[];
 
     @Prop({ required: true, ref: 'WorkspaceSchema' })
-    workspaceId: number
+    workspaceId: number;
 
     @Prop({ required: true, ref: 'UsersSchema' })
     createdBy: mongoose.Schema.Types.ObjectId;
@@ -32,3 +29,5 @@ export const contactsSchema = SchemaFactory.createForClass(ContactsSchema);
 //     tags: { type: Array, required: true },
 //     workspace_id: { type: Number, ref: 'Workspace', required: true },
 //     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'WorkspaceUser', required: true }
+
+//eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OGEyZjU1NzE5ODU0YWY4YjUxYmU0YmMiLCJ1c2VybmFlbSI6IndpbGxAa2V2aXQuaW8iLCJyb2xlIjoidmlld2VyIiwiaWF0IjoxNzU1NTEwMzg4LCJleHAiOjE3NTU1MTM5ODh9.LdIgG-YPwBjH3GwQujxIZyZXk1K37DHgaGd0TK4Aqt0

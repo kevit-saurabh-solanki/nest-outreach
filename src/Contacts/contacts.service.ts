@@ -27,7 +27,7 @@ export class ContactsService {
     //get contact by id--------------------------------------------------------------
     async getContactById(contactId: mongoose.Schema.Types.ObjectId, req: any) {
         try {
-            const foundContact = await this.contactModel.findById(contactId).populate(['workspaceId, createdBy']).exec();
+            const foundContact = await this.contactModel.findById(contactId).populate(['workspaceId', 'createdBy']).exec();
             if (!foundContact) throw new NotFoundException("Contact not found");
             return foundContact;
         }
@@ -38,7 +38,7 @@ export class ContactsService {
     }
 
     //add contact--------------------------------------------------------------------
-    async addContact(contactDto: ContactsDto, req: any) {
+    async addContact({...contactDto}: ContactsDto, req: any) {
         try {
             const role = req.users.role;
             if (role === "viewer") throw new UnauthorizedException;

@@ -4,9 +4,6 @@ import * as mongoose from 'mongoose';
 @Schema() 
 export class UsersSchema {
 
-    @Prop({ required: true, default: new mongoose.Types.ObjectId() })
-    _id: mongoose.Schema.Types.ObjectId;
-
     @Prop({ required: true, unique: true })
     email: string;
 
