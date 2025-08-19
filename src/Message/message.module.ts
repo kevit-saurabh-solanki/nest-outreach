@@ -6,6 +6,7 @@ import { workspaceSchema, WorkspaceSchema } from "src/Workspace/workspace.schema
 import { MessageControl } from "./message.controller";
 import { MessageService } from "./message.service";
 import { JwtModule } from "@nestjs/jwt";
+import { AuthModule } from "src/Auth/auth.module";
 
 @Module({
     imports: [MongooseModule.forFeature([
@@ -22,10 +23,7 @@ import { JwtModule } from "@nestjs/jwt";
             schema: workspaceSchema
         }
     ]),
-    JwtModule.register({
-        secret: process.env.JWT_KEY,
-        signOptions: { expiresIn: "1h" }
-    })],
+        AuthModule],
     controllers: [MessageControl],
     providers: [MessageService]
 })

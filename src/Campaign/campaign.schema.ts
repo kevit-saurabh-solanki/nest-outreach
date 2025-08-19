@@ -13,7 +13,7 @@ export class CampaignSchema {
     @Prop({ required: true })
     targetTags: string[];
 
-    @Prop({ required: true, enum: [ "draft", "success" ] })
+    @Prop({ required: true, enum: [ "draft", "success", "running" ] })
     status: string;
 
     @Prop({ required: true, ref: "WorkspaceSchema" })

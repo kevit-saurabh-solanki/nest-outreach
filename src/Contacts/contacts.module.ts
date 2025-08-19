@@ -6,6 +6,7 @@ import { contactsSchema, ContactsSchema } from "./contacts.schema";
 import { usersSchema, UsersSchema } from "src/Users/users.schema";
 import { workspaceSchema, WorkspaceSchema } from "src/Workspace/workspace.schema";
 import { JwtModule } from "@nestjs/jwt";
+import { AuthModule } from "src/Auth/auth.module";
 
 @Module({
     imports: [MongooseModule.forFeature([
@@ -22,10 +23,7 @@ import { JwtModule } from "@nestjs/jwt";
             schema: workspaceSchema
         }
     ]),
-    JwtModule.register({
-        secret: process.env.JWT_KEY,
-        signOptions: { expiresIn: "1h" }
-    })],
+        AuthModule],
     controllers: [ContactsControl],
     providers: [ContactsService]
 })
