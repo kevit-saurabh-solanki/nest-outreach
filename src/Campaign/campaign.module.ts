@@ -5,7 +5,6 @@ import { MongooseModule } from "@nestjs/mongoose";
 import { campaignSchema, CampaignSchema } from "./campaign.schema";
 import { UsersSchema, usersSchema } from "src/Users/users.schema";
 import { WorkspaceSchema, workspaceSchema } from "src/Workspace/workspace.schema";
-import { JwtModule } from "@nestjs/jwt";
 import { AuthModule } from "src/Auth/auth.module";
 
 @Module({

@@ -39,16 +39,17 @@ export class CampaignService {
     }
 
     //add campaign----------------------------------------------------------------
-    async addCampaign(campaignDto: CampaignDto, req: any) {
+    async addCampaign({createdBy, ...campaignDto}: CampaignDto, req: any) {
         try {
             const role = req.users.role;
             if (role === "viewer") throw new UnauthorizedException;
-            const findUser = await this.userModel.findById(campaignDto.createdBy).exec();
+            const findUser = await this.userModel.findById(req.users._id).exec();
             if (!findUser) throw new NotFoundException("User not found");
-            const findWorkspace = await this.workspaceModel.findById(campaignDto.workspaceId).exec();
-            if (!findWorkspace) throw new NotFoundException("Workspace not found");
+            // const workspaces = req.users.workspaceId;
+            // const findWorkspace = await this.workspaceModel.findById(req.users.workspaceId).exec();
+            // if (!findWorkspace) throw new NotFoundException("Workspace not found");
 
-            const newCampaign = new this.campaignModel(campaignDto);
+            const newCampaign = new this.campaignModel({ createdBy: req.users._id, ...campaignDto });
             const savedCampaign = await newCampaign.save();
             return savedCampaign;
         }

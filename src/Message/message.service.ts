@@ -39,16 +39,16 @@ export class MessageService {
     }
 
     //add message----------------------------------------------------------------
-    async addMessage(messageDto: MessageDto, req: any) {
+    async addMessage({createdBy, ...messageDto}: MessageDto, req: any) {
         try {
             const role = req.users.role;
             if (role === "viewer") throw new UnauthorizedException;
-            const findUser = await this.userModel.findById(messageDto.createdBy).exec();
+            const findUser = await this.userModel.findById(req.users._id).exec();
             if (!findUser) throw new NotFoundException("User not found");
-            const findWorkspace = await this.workspaceModel.findById(messageDto.workspaceId).exec();
-            if (!findWorkspace) throw new NotFoundException("Workspace not found");
+            // const findWorkspace = await this.workspaceModel.findOne({ _id: req.users.workspaceId }).exec();
+            // if (!findWorkspace) throw new NotFoundException("Workspace not found");
 
-            const newMessage = new this.messageModel(messageDto);
+            const newMessage = new this.messageModel({ createdBy: req.users._id, ...messageDto });
             const savedMessage = await newMessage.save();
             return savedMessage
         }

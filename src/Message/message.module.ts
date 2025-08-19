@@ -5,7 +5,6 @@ import { usersSchema, UsersSchema } from "src/Users/users.schema";
 import { workspaceSchema, WorkspaceSchema } from "src/Workspace/workspace.schema";
 import { MessageControl } from "./message.controller";
 import { MessageService } from "./message.service";
-import { JwtModule } from "@nestjs/jwt";
 import { AuthModule } from "src/Auth/auth.module";
 
 @Module({

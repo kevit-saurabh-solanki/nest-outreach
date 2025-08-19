@@ -13,13 +13,13 @@ export class UsersService {
     //Add users-----------------------------------------------------------------------
     async addUser({ password, ...userData }: UsersDto, req: any) {
         try {
-            const isAdmin = req.users.isAdmin;
-            if (!isAdmin) throw new UnauthorizedException;
+            // const isAdmin = req.users.isAdmin;
+            // if (!isAdmin) throw new UnauthorizedException;
             const foundUser = await this.usersModel.findOne({ $and: [{ email: userData.email }, { workspaceId: userData.workspaceId }] }).exec();
             if (foundUser) throw new ConflictException("user already exist in the specified workspace"); //409
             const { workspaceId } = userData;
-            const foundWorkspace = await this.workspaceModel.findById(workspaceId).exec();
-            if (!foundWorkspace) throw new NotFoundException("workspace not found");
+            // const foundWorkspace = await this.workspaceModel.findById(workspaceId).exec();
+            // if (!foundWorkspace) throw new NotFoundException("workspace not found");
             const hashedPass = await bcrypt.hash(password, 10);
             const newUser = new this.usersModel({ password: hashedPass, ...userData });
             return newUser.save();
