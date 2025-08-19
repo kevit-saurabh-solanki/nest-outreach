@@ -38,18 +38,17 @@ export class ContactsService {
     }
 
     //add contact--------------------------------------------------------------------
-    async addContact({...contactDto}: ContactsDto, req: any) {
+    async addContact({ createdBy, ...contactDto}: ContactsDto, req: any) {
         try {
             const role = req.users.role;
             if (role === "viewer") throw new UnauthorizedException;
-            const findContact = await this.contactModel.findOne({ $and: [{ phoneNumber: contactDto.phoneNumber }, { workspaceId: contactDto.workspaceId }] }).exec();
+            const findContact = await this.contactModel.findOne({ phoneNumber: contactDto.phoneNumber, workspaceId: contactDto.workspaceId }).exec();
             if (findContact) throw new ConflictException("Contact already exist in the workspace");
-            const { workspaceId, createdBy } = contactDto;
-            const findUser = await this.userModel.findById(createdBy).exec();
+            const findUser = await this.userModel.findById(req.users._id).exec();
             if (!findUser) throw new NotFoundException("User not found");
-            const findWorkspace = await this.workspaceModel.findById(workspaceId).exec();
+            const findWorkspace = await this.workspaceModel.findById(req.users.workspaceId).exec();
             if (!findWorkspace) throw new NotFoundException("Workspace not found");
-            const newContact = new this.contactModel(contactDto);
+            const newContact = new this.contactModel({createdBy: req.users._id, ...contactDto});
             const savedContact = await newContact.save();
             return savedContact;
         }

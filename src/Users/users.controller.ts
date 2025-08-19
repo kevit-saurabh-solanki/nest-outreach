@@ -9,7 +9,7 @@ export class UsersControl {
     constructor(private usersService: UsersService) { }
 
     @Post()
-    @UseGuards(AuthGuard)
+    // @UseGuards(AuthGuard)
     async addUser(@Body() userDto: UsersDto, @Req() req: any) {
         return this.usersService.addUser(userDto, req);
     }

@@ -14,11 +14,10 @@ export class MessageSchema {
     content: string;
 
     @Prop({ required: true, ref: "WorkspaceSchema" })
-    workspaceId: number;
+    workspaceId: string;
 
     @Prop({ required: true, ref: "UsersSchema" })
     createdBy: mongoose.Schema.Types.ObjectId;
-
 }
 
 export const messageSchema = SchemaFactory.createForClass(MessageSchema);

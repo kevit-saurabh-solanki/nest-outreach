@@ -4,7 +4,6 @@ import { usersSchema, UsersSchema } from "./users.schema";
 import { UsersControl } from "./users.controller";
 import { UsersService } from "./users.service";
 import { workspaceSchema, WorkspaceSchema } from "src/Workspace/workspace.schema";
-import { JwtModule } from "@nestjs/jwt";
 import { AuthModule } from "src/Auth/auth.module";
 
 @Module({

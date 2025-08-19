@@ -1,5 +1,4 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import * as mongoose from 'mongoose';
 
 @Schema() 
 export class UsersSchema {
@@ -13,11 +12,11 @@ export class UsersSchema {
     @Prop({ required: true, enum: ['editor', 'viewer'] })
     role: string;
 
-    @Prop({ required: false, ref: 'WorkspaceSchema' })
-    workspaceId?: number;
+    @Prop({ required: true, ref: 'WorkspaceSchema' })
+    workspaceId: string[];
 
     @Prop({ required: false })
-    isAdmin?: boolean
+    isAdmin?: boolean;
 
     @Prop({ required: true, type: Date, default: new Date().toISOString() })
     createdAt: string;
