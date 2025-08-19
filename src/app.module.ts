@@ -6,6 +6,7 @@ import { WorkspaceModule } from './Workspace/workspace.module';
 import { ContactsModule } from './Contacts/contacts.module';
 import { MessageModule } from './Message/message.module';
 import { ConfigModule } from '@nestjs/config';
+import { CampaignModule } from './Campaign/campaign.module';
 
 @Module({
   imports: [
@@ -14,10 +15,11 @@ import { ConfigModule } from '@nestjs/config';
       envFilePath: '.env'
     }),
     AuthModule,
-    UsersModule,
     WorkspaceModule,
+    UsersModule,
     ContactsModule,
     MessageModule,
+    CampaignModule,
     MongooseModule.forRoot(`mongodb+srv://saurabhsolanki:${process.env.MONGO_PASS}@cluster0.x0iofqd.mongodb.net/nestOutreach?retryWrites=true&w=majority&appName=Cluster0`)
   ],
   controllers: [],
