@@ -7,7 +7,7 @@ import { usersSchema, UsersSchema } from 'src/Users/users.schema';
 
 @Module({
     imports: [JwtModule.register({
-        secret: 'secret',
+        secret: process.env.JWT_KEY,
         signOptions: { expiresIn: "1h" }
     }),
     MongooseModule.forFeature([
