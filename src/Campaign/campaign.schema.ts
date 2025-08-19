@@ -2,16 +2,19 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import mongoose from "mongoose";
 
 @Schema()
-export class MessageSchema {
+export class CampaignSchema {
 
     @Prop({ required: true })
-    title: string;
-
-    @Prop({ required: true, enum: [ "text", "image" ] })
-    messageType: string;
+    name: string;
 
     @Prop({ required: true })
-    content: string;
+    message: string;
+
+    @Prop({ required: true })
+    targetTags: string[];
+
+    @Prop({ required: true, enum: [ "draft", "success" ] })
+    status: string;
 
     @Prop({ required: true, ref: "WorkspaceSchema" })
     workspaceId: number;
@@ -21,4 +24,4 @@ export class MessageSchema {
 
 }
 
-export const messageSchema = SchemaFactory.createForClass(MessageSchema);
+export const campaignSchema = SchemaFactory.createForClass(CampaignSchema);

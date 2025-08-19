@@ -1,17 +1,17 @@
 import { Module } from "@nestjs/common";
+import { CampaignController } from "./campaign.controller";
+import { CampaignService } from "./campaign.service";
 import { MongooseModule } from "@nestjs/mongoose";
-import { messageSchema, MessageSchema } from "./message.schema";
-import { usersSchema, UsersSchema } from "src/Users/users.schema";
-import { workspaceSchema, WorkspaceSchema } from "src/Workspace/workspace.schema";
-import { MessageControl } from "./message.controller";
-import { MessageService } from "./message.service";
+import { campaignSchema, CampaignSchema } from "./campaign.schema";
+import { UsersSchema, usersSchema } from "src/Users/users.schema";
+import { WorkspaceSchema, workspaceSchema } from "src/Workspace/workspace.schema";
 import { JwtModule } from "@nestjs/jwt";
 
 @Module({
     imports: [MongooseModule.forFeature([
         {
-            name: MessageSchema.name,
-            schema: messageSchema
+            name: CampaignSchema.name,
+            schema: campaignSchema
         },
         {
             name: UsersSchema.name,
@@ -26,7 +26,7 @@ import { JwtModule } from "@nestjs/jwt";
         secret: process.env.JWT_KEY,
         signOptions: { expiresIn: "1h" }
     })],
-    controllers: [MessageControl],
-    providers: [MessageService]
+    controllers: [CampaignController],
+    providers: [CampaignService]
 })
-export class MessageModule { }
+export class CampaignModule { }
