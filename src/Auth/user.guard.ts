@@ -1,18 +1,34 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
 import { Observable } from 'rxjs';
+import { UsersSchema } from 'src/Users/users.schema';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class UserGuard implements CanActivate {
-  canActivate(context: ExecutionContext,): boolean | Promise<boolean> | Observable<boolean> {
 
-    const req = context.switchToHttp().getRequest();
-    const role = req.users.role;
+  constructor(@InjectModel(UsersSchema.name) private usersModel: Model<UsersSchema>) {}
 
-    if (role === 'viewer') {
-      console.log('role viewer');
-      throw new UnauthorizedException('Unauthorized');
+  async canActivate(context: ExecutionContext,): Promise<boolean> {
+
+    try {
+      const req = context.switchToHttp().getRequest();
+      const id = req.users._id;
+
+      const findUser = await this.usersModel.findById(id);
+      if (!findUser) throw new NotFoundException('User not found')
+      const role = findUser.role;
+
+      if (role === 'viewer') {
+        console.log('role viewer');
+        throw new UnauthorizedException('Unauthorized');
+      }
+
+      return true;
     }
-
-    return true;
+    catch (err) {
+      console.log(err);
+      return false;
+    }
   }
 }
