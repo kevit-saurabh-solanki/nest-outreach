@@ -29,13 +29,13 @@ export class CampaignController {
 
     @Delete(':campaignId')
     @UseGuards(AuthGuard, UserGuard)
-    deleteCampaign(@Param('campaignId') campaignId: mongoose.Schema.Types.ObjectId, @Req() req: any) {
-        return this.campaignService.deleteCampaign(campaignId, req);
+    deleteCampaign(@Param('campaignId') campaignId: mongoose.Schema.Types.ObjectId) {
+        return this.campaignService.deleteCampaign(campaignId);
     }
 
     @Put(':campaignId')
     @UseGuards(AuthGuard, UserGuard)
-    editCampaign(@Param('campaignId') campaignId: mongoose.Schema.Types.ObjectId, @Body() updateCampaignDto: UpdateCampaignDto, @Req() req: any) {
-        return this.campaignService.editCampaign(campaignId, updateCampaignDto, req);
+    editCampaign(@Param('campaignId') campaignId: mongoose.Schema.Types.ObjectId, @Body() updateCampaignDto: UpdateCampaignDto) {
+        return this.campaignService.editCampaign(campaignId, updateCampaignDto);
     }
 }

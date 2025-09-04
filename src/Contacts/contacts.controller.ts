@@ -11,14 +11,14 @@ export class ContactsControl {
 
     @Get()
     @UseGuards(AuthGuard)
-    getAllContacts(@Req() req: any) {
-        return this.contactService.getAllContacts(req);
+    getAllContacts() {
+        return this.contactService.getAllContacts();
     }
 
     @Get(':contactId')
     @UseGuards(AuthGuard)
-    getContactById(@Param('contactId') contactId: mongoose.Schema.Types.ObjectId, @Req() req: any) {
-        return this.contactService.getContactById(contactId, req);
+    getContactById(@Param('contactId') contactId: mongoose.Schema.Types.ObjectId) {
+        return this.contactService.getContactById(contactId);
     }
 
     @Post()
@@ -29,14 +29,14 @@ export class ContactsControl {
 
     @Put(':contactId')
     @UseGuards(AuthGuard, UserGuard)
-    editContact(@Param('contactId') contactId: mongoose.Schema.Types.ObjectId, @Body() updateContactDto: UpdateContactsDto, @Req() req: any) {
-        return this.contactService.editContact(contactId, updateContactDto, req);
+    editContact(@Param('contactId') contactId: mongoose.Schema.Types.ObjectId, @Body() updateContactDto: UpdateContactsDto) {
+        return this.contactService.editContact(contactId, updateContactDto);
     }
 
     @Delete(':contactId')
     @UseGuards(AuthGuard, UserGuard)
-    deleteContact(@Param('contactId') contactId: mongoose.Schema.Types.ObjectId, @Req() req: any) {
-        return this.contactService.deleteContact(contactId, req);
+    deleteContact(@Param('contactId') contactId: mongoose.Schema.Types.ObjectId) {
+        return this.contactService.deleteContact(contactId);
     }
 
 }

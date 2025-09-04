@@ -10,31 +10,31 @@ export class WorkspaceControl {
 
     @Post()
     @UseGuards(AuthGuard, AdminGuard)
-    createWorkspace(@Body() workspaceDto: WorkspaceDto, @Req() req: any) {
-        return this.workspaceService.createWorkspace(workspaceDto, req);
+    createWorkspace(@Body() workspaceDto: WorkspaceDto) {
+        return this.workspaceService.createWorkspace(workspaceDto);
     }
 
     @Get()
     @UseGuards(AuthGuard, AdminGuard)
-    getAllWorkspace(@Req() req: any) {
-        return this.workspaceService.getAllWorkspace(req);
+    getAllWorkspace() {
+        return this.workspaceService.getAllWorkspace();
     }
 
     @Get(':workspaceId')
     @UseGuards(AuthGuard, AdminGuard)
-    getWorkspaceById(@Param('workspaceId', ParseIntPipe) workspaceId: number, @Req() req: any) {
-        return this.workspaceService.getWorkspaceById(workspaceId, req);
+    getWorkspaceById(@Param('workspaceId') workspaceId: string) {
+        return this.workspaceService.getWorkspaceById(workspaceId);
     }
 
     @Delete(':workspaceId')
     @UseGuards(AuthGuard, AdminGuard)
-    deleteWorkspaceById(@Param('workspaceId', ParseIntPipe) workspaceId: number, @Req() req: any) {
-        return this.workspaceService.deleteWorkspaceById(workspaceId, req);
+    deleteWorkspaceById(@Param('workspaceId') workspaceId: string) {
+        return this.workspaceService.deleteWorkspaceById(workspaceId);
     }
 
     @Put(':workspaceId')
     @UseGuards(AuthGuard, AdminGuard)
-    editWorkspaceById(@Param('workspaceId') workspaceId: number,@Body() updateWorkspaceDto: UpdateWorkspaceDto, @Req() req: any) {
-        return this.workspaceService.editWorkspaceById(workspaceId, updateWorkspaceDto, req);
+    editWorkspaceById(@Param('workspaceId') workspaceId: string, @Body() updateWorkspaceDto: UpdateWorkspaceDto) {
+        return this.workspaceService.editWorkspaceById(workspaceId, updateWorkspaceDto);
     }
 }

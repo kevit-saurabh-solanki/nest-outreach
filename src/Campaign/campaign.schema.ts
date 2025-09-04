@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import mongoose from "mongoose";
 
-@Schema()
+@Schema({ timestamps: true })
 export class CampaignSchema {
 
     @Prop({ required: true })
@@ -18,9 +18,6 @@ export class CampaignSchema {
 
     @Prop({ required: true, ref: "WorkspaceSchema" })
     workspaceId: string;
-
-    @Prop({ required: true, ref: "UsersSchema" })
-    createdBy: mongoose.Schema.Types.ObjectId;
 
 }
 

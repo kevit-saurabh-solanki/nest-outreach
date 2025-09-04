@@ -3,8 +3,6 @@ import mongoose from "mongoose";
 
 export class ContactsDto {
 
-    _id: mongoose.Schema.Types.ObjectId;
-
     @IsNotEmpty()
     @IsString()
     name: string;
@@ -20,10 +18,6 @@ export class ContactsDto {
     @IsNotEmpty()
     @IsString()
     workspaceId: string;
-
-    @IsOptional()
-    @IsString()
-    createdBy?: mongoose.Schema.Types.ObjectId;
 
 }
 
@@ -45,8 +39,4 @@ export class UpdateContactsDto {
     @IsString()
     workspaceId?: string;
 
-    @IsOptional()
-    @IsString()
-    createdBy?: mongoose.Schema.Types.ObjectId;
-    
 }

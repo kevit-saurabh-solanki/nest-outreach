@@ -39,10 +39,8 @@ export class CampaignService {
     }
 
     //add campaign----------------------------------------------------------------
-    async addCampaign({ createdBy, ...campaignDto }: CampaignDto, req: any) {
+    async addCampaign({...campaignDto }: CampaignDto, req: any) {
         try {
-            const findUser = await this.userModel.findById(req.users._id).exec();
-            if (!findUser) throw new NotFoundException("User not found");
             const findWorkspace = await this.workspaceModel.findById(campaignDto.workspaceId).exec();
             if (!findWorkspace) throw new NotFoundException("Workspace not found");
 
@@ -57,7 +55,7 @@ export class CampaignService {
     }
 
     //delete campaign by ID----------------------------------------------------------
-    async deleteCampaign(campaignId: mongoose.Schema.Types.ObjectId, req: any) {
+    async deleteCampaign(campaignId: mongoose.Schema.Types.ObjectId) {
         try {
             const deleteCampaign = await this.campaignModel.findOneAndDelete({ _id: campaignId }).exec();
             if (!deleteCampaign) throw new NotFoundException("campaign not found");
@@ -70,7 +68,7 @@ export class CampaignService {
     }
 
     //edit campaign
-    async editCampaign(campaignId: mongoose.Schema.Types.ObjectId, updateCampaign: UpdateCampaignDto, req: any) {
+    async editCampaign(campaignId: mongoose.Schema.Types.ObjectId, {...updateCampaign}: UpdateCampaignDto) {
         try {
             const editcampaign = await this.campaignModel.findOneAndUpdate({ _id: campaignId }, { ...updateCampaign }, { returnDocument: "after" }).exec();
             if (!editcampaign) throw new NotFoundException("campaign not found");

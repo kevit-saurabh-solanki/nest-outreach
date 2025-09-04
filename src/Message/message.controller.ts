@@ -29,13 +29,13 @@ export class MessageControl {
 
     @Delete(':messageId')
     @UseGuards(AuthGuard, UserGuard)
-    deleteMessage(@Param('messageId') messageId: mongoose.Schema.Types.ObjectId, @Req() req: any) {
-        return this.messageService.deleteMessage(messageId, req);
+    deleteMessage(@Param('messageId') messageId: mongoose.Schema.Types.ObjectId) {
+        return this.messageService.deleteMessage(messageId);
     }
 
     @Put(':messageId')
     @UseGuards(AuthGuard, UserGuard)
-    editMessage(@Param('messageId') messageId: mongoose.Schema.Types.ObjectId, @Body() updateMessageDto: UpdateMessageDto, @Req() req: any) {
-        return this.messageService.editMessage(messageId, updateMessageDto, req);
+    editMessage(@Param('messageId') messageId: mongoose.Schema.Types.ObjectId, @Body() updateMessageDto: UpdateMessageDto) {
+        return this.messageService.editMessage(messageId, updateMessageDto);
     } 
 }

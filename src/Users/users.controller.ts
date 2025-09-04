@@ -11,31 +11,31 @@ export class UsersControl {
 
     @Post()
     @UseGuards(AuthGuard, AdminGuard)
-    async addUser(@Body() userDto: UsersDto, @Req() req: any) {
-        return this.usersService.addUser(userDto, req);
+    async addUser(@Body() userDto: UsersDto) {
+        return this.usersService.addUser(userDto);
     }
 
     @Get()
     @UseGuards(AuthGuard, AdminGuard)
-    getUser(@Req() req: any) {
-        return this.usersService.getAllUsers(req);
+    getUser() {
+        return this.usersService.getAllUsers();
     }
 
     @Get('/:userId')
     @UseGuards(AuthGuard, AdminGuard)
-    getUserById(@Param('userId') userId: mongoose.Schema.Types.ObjectId, @Req() req: any) {
-        return this.usersService.getUserById(userId, req);
+    getUserById(@Param('userId') userId: mongoose.Schema.Types.ObjectId) {
+        return this.usersService.getUserById(userId);
     }
 
     @Delete('/:userId')
     @UseGuards(AuthGuard, AdminGuard)
-    deleteUserById(@Param('userId') userId: mongoose.Schema.Types.ObjectId, @Req() req: any) {
-        return this.usersService.deleteUser(userId, req);
+    deleteUserById(@Param('userId') userId: mongoose.Schema.Types.ObjectId) {
+        return this.usersService.deleteUser(userId);
     }
 
     @Put('/:userId')
     @UseGuards(AuthGuard, AdminGuard)
-    editUserById(@Param('userId') userId: mongoose.Schema.Types.ObjectId, @Body() updateUserDto: updateUserDto, @Req() req: any) {
-        return this.usersService.editUser(userId, updateUserDto, req);
+    editUserById(@Param('userId') userId: mongoose.Schema.Types.ObjectId, @Body() updateUserDto: updateUserDto) {
+        return this.usersService.editUser(userId, updateUserDto);
     }
 }

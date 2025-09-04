@@ -19,10 +19,6 @@ export class MessageDto {
     @IsString()
     workspaceId: string;
 
-    @IsOptional()
-    @IsString()
-    createdBy?: mongoose.Schema.Types.ObjectId;
-
 }
 
 export class UpdateMessageDto {
@@ -42,9 +38,5 @@ export class UpdateMessageDto {
     @IsOptional()
     @IsString()
     workspaceId?: string;
-
-    @IsString()
-    @IsOptional()
-    createdBy?: mongoose.Schema.Types.ObjectId;
 
 }

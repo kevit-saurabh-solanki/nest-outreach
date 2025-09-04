@@ -19,8 +19,8 @@ export class UserGuard implements CanActivate {
       if (!findUser) throw new NotFoundException('User not found')
       const role = findUser.role;
 
-      if (role === 'viewer') {
-        console.log('role viewer');
+      if (role === 'viewer' || role === undefined) {
+        console.log('role viewer or admin');
         throw new UnauthorizedException('Unauthorized');
       }
 

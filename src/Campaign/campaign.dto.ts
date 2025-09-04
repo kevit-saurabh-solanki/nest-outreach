@@ -23,8 +23,6 @@ export class CampaignDto {
     @IsString()
     workspaceId: string;
 
-    @IsOptional()
-    createdBy?: mongoose.Schema.Types.ObjectId;
 }
 
 export class UpdateCampaignDto {
@@ -49,7 +47,4 @@ export class UpdateCampaignDto {
     @IsString()
     workspaceId?: string;
 
-    @IsOptional()
-    @IsString()
-    createdBy?: mongoose.Schema.Types.ObjectId;
 }

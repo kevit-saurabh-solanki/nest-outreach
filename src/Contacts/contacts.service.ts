@@ -13,7 +13,7 @@ export class ContactsService {
                 @InjectModel(WorkspaceSchema.name) private workspaceModel: Model<WorkspaceSchema>) { }
 
     //get all contacts------------------------------------------------------------
-    async getAllContacts(req: any) {
+    async getAllContacts() {
         try {
             const allContacts = await this.contactModel.find({}).exec();
             return allContacts;
@@ -25,9 +25,8 @@ export class ContactsService {
     }
 
     //get contact by id--------------------------------------------------------------
-    async getContactById(contactId: mongoose.Schema.Types.ObjectId, req: any) {
+    async getContactById(contactId: mongoose.Schema.Types.ObjectId) {
         try {
-            const userId = req.users.createdBy;
             const foundContact = await this.contactModel.findById(contactId).populate(['workspaceId', 'createdBy']).exec();
             if (!foundContact) throw new NotFoundException("Contact not found");
             return foundContact;
@@ -39,14 +38,10 @@ export class ContactsService {
     }
 
     //add contact--------------------------------------------------------------------
-    async addContact({ createdBy, ...contactDto}: ContactsDto, req: any) {
+    async addContact({...contactDto}: ContactsDto, req: any) {
         try {
-            const findContact = await this.contactModel.findOne({ phoneNumber: contactDto.phoneNumber, workspaceId: contactDto.workspaceId }).exec();
+            const findContact = await this.contactModel.findOne({ $and : [{phoneNumber: contactDto.phoneNumber}, {workspaceId: contactDto.workspaceId}] }).exec();
             if (findContact) throw new ConflictException("Contact already exist in the workspace");
-            const findUser = await this.userModel.findById(req.users._id).exec();
-            if (!findUser) throw new NotFoundException("User not found");
-            // const findWorkspace = await this.workspaceModel.findById(req.users.workspaceId).exec();
-            // if (!findWorkspace) throw new NotFoundException("Workspace not found");
             const newContact = new this.contactModel({createdBy: req.users._id, ...contactDto});
             const savedContact = await newContact.save();
             return savedContact;
@@ -58,7 +53,7 @@ export class ContactsService {
     }
 
     //delete contact------------------------------------------------------------------
-    async deleteContact(contactId: mongoose.Schema.Types.ObjectId, req: any) {
+    async deleteContact(contactId: mongoose.Schema.Types.ObjectId) {
         try {
             const deleteContact = await this.contactModel.findOneAndDelete({ _id: contactId }, { returnDocument: "after" }).exec();
             if (!deleteContact) throw new NotFoundException("Contact not found");
@@ -71,8 +66,10 @@ export class ContactsService {
     }
 
     //edit contact---------------------------------------------------------------------
-    async editContact(contactId: mongoose.Schema.Types.ObjectId, {...updateContactDto}: UpdateContactsDto, req: any) {
+    async editContact(contactId: mongoose.Schema.Types.ObjectId, {...updateContactDto}: UpdateContactsDto) {
         try {
+            const findContact = await this.contactModel.findOne({ $and : [{phoneNumber: updateContactDto.phoneNumber}, {workspaceId: updateContactDto.workspaceId}] }).exec();
+            if (findContact) throw new ConflictException("Contact already exist in the workspace");
             const editContact = await this.contactModel.findByIdAndUpdate({ _id: contactId }, { ...updateContactDto }, { returnDocument: "after" }).exec();
             if (!editContact) throw new NotFoundException("Contact not found");
             return editContact;

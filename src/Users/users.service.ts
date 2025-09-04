@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { UsersSchema } from "./users.schema";
 import mongoose, { Model } from "mongoose";
@@ -11,13 +11,10 @@ export class UsersService {
     constructor(@InjectModel(UsersSchema.name) private usersModel: Model<UsersSchema>, @InjectModel(WorkspaceSchema.name) private workspaceModel: Model<WorkspaceSchema>) { }
 
     //Add users-----------------------------------------------------------------------
-    async addUser({ password, ...userData }: UsersDto, req: any) {
+    async addUser({ password, ...userData }: UsersDto) {
         try {
-            const foundUser = await this.usersModel.findOne({ $and: [{ email: userData.email }, { workspaceId: userData.workspaceId }] }).exec();
-            if (foundUser) throw new ConflictException("user already exist in the specified workspace"); //409
-            const { workspaceId } = userData;
-            // const foundWorkspace = await this.workspaceModel.findById(workspaceId).exec();
-            // if (!foundWorkspace) throw new NotFoundException("workspace not found");
+            const foundWorkspace = await this.workspaceModel.findById(userData.workspaceId).exec();
+            if (!foundWorkspace) throw new NotFoundException("workspace not found");
             const hashedPass = await bcrypt.hash(password, 10);
             const newUser = new this.usersModel({ password: hashedPass, ...userData });
             return newUser.save();
@@ -29,7 +26,7 @@ export class UsersService {
     }
 
     //Get all users------------------------------------------------------------------
-    async getAllUsers(req: any) {
+    async getAllUsers() {
         try {
             const allUsers = await this.usersModel.find({}, { _id: 1, email: 1, role: 1, workspaceId: 1 }).exec();
             return allUsers;
@@ -41,7 +38,7 @@ export class UsersService {
     }
 
     //Get users by id----------------------------------------------------------------
-    async getUserById(userId: mongoose.Schema.Types.ObjectId, req: any) {
+    async getUserById(userId: mongoose.Schema.Types.ObjectId) {
         try {
             const findUser = await this.usersModel.findOne({ _id: userId }, { _id: 1, email: 1, role: 1, workspaceId: 1 }).populate("workspaceId").exec();
             if (!findUser) throw new NotFoundException("User not found");
@@ -54,11 +51,11 @@ export class UsersService {
     }
 
     //delete a user-----------------------------------------------------------------
-    async deleteUser(userId: mongoose.Schema.Types.ObjectId, req: any) {
+    async deleteUser(userId: mongoose.Schema.Types.ObjectId) {
         try {
             const deletedUser = await this.usersModel.findOneAndDelete({ _id: userId }, { returnDocument: "after" }).exec()
             if (!deletedUser) throw new NotFoundException("User not found");
-            return { deleted_userId: deletedUser._id, deleted_email: deletedUser.email, deleted_role: deletedUser.role, deleted_workspaceId: deletedUser.workspaceId };
+            return deletedUser;
         }
         catch (err) {
             console.log(err);
@@ -67,7 +64,7 @@ export class UsersService {
     }
 
     //edit a user---------------------------------------------------------------------
-    async editUser(userId: mongoose.Schema.Types.ObjectId, { password , ...updateUserDto }: updateUserDto, req: any) {
+    async editUser(userId: mongoose.Schema.Types.ObjectId, { password , ...updateUserDto }: updateUserDto) {
         try {
             if (password) {
                 const editHashedPass = await bcrypt.hash(password, 10);

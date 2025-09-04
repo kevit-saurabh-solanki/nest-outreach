@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { MessageSchema } from "./message.schema";
 import mongoose, { Model } from 'mongoose'
@@ -39,13 +39,8 @@ export class MessageService {
     }
 
     //add message----------------------------------------------------------------
-    async addMessage({createdBy, ...messageDto}: MessageDto, req: any) {
+    async addMessage({...messageDto}: MessageDto, req: any) {
         try {
-            const findUser = await this.userModel.findById(req.users._id).exec();
-            if (!findUser) throw new NotFoundException("User not found");
-            // const findWorkspace = await this.workspaceModel.findOne({ _id: req.users.workspaceId }).exec();
-            // if (!findWorkspace) throw new NotFoundException("Workspace not found");
-
             const newMessage = new this.messageModel({ createdBy: req.users._id, ...messageDto });
             const savedMessage = await newMessage.save();
             return savedMessage
@@ -57,7 +52,7 @@ export class MessageService {
     }
 
     //delete message by ID----------------------------------------------------------
-    async deleteMessage(messageId: mongoose.Schema.Types.ObjectId, req: any) {
+    async deleteMessage(messageId: mongoose.Schema.Types.ObjectId) {
         try {
             const deleteMessage = await this.messageModel.findOneAndDelete({ _id: messageId }).exec();
             if (!deleteMessage) throw new NotFoundException("message not found");
@@ -70,7 +65,7 @@ export class MessageService {
     }
 
     //edit message
-    async editMessage(messageId: mongoose.Schema.Types.ObjectId, updateMessage: UpdateMessageDto, req: any) {
+    async editMessage(messageId: mongoose.Schema.Types.ObjectId, {...updateMessage}: UpdateMessageDto) {
         try {
             const editMessage = await this.messageModel.findOneAndUpdate({ _id: messageId }, { ...updateMessage }, { returnDocument: "after" }).exec();
             if (!editMessage) throw new NotFoundException("message not found");

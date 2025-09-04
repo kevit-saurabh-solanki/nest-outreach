@@ -12,16 +12,16 @@ export class UsersDto {
     password: string;
 
     @IsString()
-    @IsNotEmpty()
-    role: string;
-
-    @IsArray()
-    @IsNotEmpty() 
-    workspaceId: string[];
+    @IsOptional()
+    role?: string;
 
     @IsOptional()
     @IsBoolean()  
     isAdmin?: boolean;
+
+    @IsString()
+    @IsOptional()
+    workspaceId?: string;
 
 }
 
@@ -40,7 +40,7 @@ export class updateUserDto {
     role?: string;
 
     @IsOptional()
-    @IsArray()
-    workspaceId?: string[];
+    @IsString()
+    workspaceId?: string;
     
 }
