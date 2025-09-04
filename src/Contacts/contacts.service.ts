@@ -27,6 +27,7 @@ export class ContactsService {
     //get contact by id--------------------------------------------------------------
     async getContactById(contactId: mongoose.Schema.Types.ObjectId, req: any) {
         try {
+            const userId = req.users.createdBy;
             const foundContact = await this.contactModel.findById(contactId).populate(['workspaceId', 'createdBy']).exec();
             if (!foundContact) throw new NotFoundException("Contact not found");
             return foundContact;
@@ -40,14 +41,12 @@ export class ContactsService {
     //add contact--------------------------------------------------------------------
     async addContact({ createdBy, ...contactDto}: ContactsDto, req: any) {
         try {
-            const role = req.users.role;
-            if (role === "viewer") throw new UnauthorizedException;
             const findContact = await this.contactModel.findOne({ phoneNumber: contactDto.phoneNumber, workspaceId: contactDto.workspaceId }).exec();
             if (findContact) throw new ConflictException("Contact already exist in the workspace");
             const findUser = await this.userModel.findById(req.users._id).exec();
             if (!findUser) throw new NotFoundException("User not found");
-            const findWorkspace = await this.workspaceModel.findById(req.users.workspaceId).exec();
-            if (!findWorkspace) throw new NotFoundException("Workspace not found");
+            // const findWorkspace = await this.workspaceModel.findById(req.users.workspaceId).exec();
+            // if (!findWorkspace) throw new NotFoundException("Workspace not found");
             const newContact = new this.contactModel({createdBy: req.users._id, ...contactDto});
             const savedContact = await newContact.save();
             return savedContact;
@@ -61,8 +60,6 @@ export class ContactsService {
     //delete contact------------------------------------------------------------------
     async deleteContact(contactId: mongoose.Schema.Types.ObjectId, req: any) {
         try {
-            const role = req.users.role;
-            if (role === "viewer") throw new UnauthorizedException;
             const deleteContact = await this.contactModel.findOneAndDelete({ _id: contactId }, { returnDocument: "after" }).exec();
             if (!deleteContact) throw new NotFoundException("Contact not found");
             return deleteContact;
@@ -76,8 +73,6 @@ export class ContactsService {
     //edit contact---------------------------------------------------------------------
     async editContact(contactId: mongoose.Schema.Types.ObjectId, {...updateContactDto}: UpdateContactsDto, req: any) {
         try {
-            const role = req.users.role;
-            if (role === "viewer") throw new UnauthorizedException;
             const editContact = await this.contactModel.findByIdAndUpdate({ _id: contactId }, { ...updateContactDto }, { returnDocument: "after" }).exec();
             if (!editContact) throw new NotFoundException("Contact not found");
             return editContact;

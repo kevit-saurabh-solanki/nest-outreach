@@ -3,6 +3,7 @@ import { CampaignService } from "./campaign.service";
 import { AuthGuard } from "src/Auth/auth.guard";
 import mongoose from "mongoose";
 import { CampaignDto, UpdateCampaignDto } from "./campaign.dto";
+import { UserGuard } from "src/Auth/user.guard";
 
 @Controller('campaigns')
 export class CampaignController {
@@ -21,19 +22,19 @@ export class CampaignController {
     }
 
     @Post()
-    @UseGuards(AuthGuard)
+    @UseGuards(AuthGuard, UserGuard)
     addCampaign(@Body() campaignDto: CampaignDto, @Req() req: any) {
         return this.campaignService.addCampaign(campaignDto, req);
     }
 
     @Delete(':campaignId')
-    @UseGuards(AuthGuard)
+    @UseGuards(AuthGuard, UserGuard)
     deleteCampaign(@Param('campaignId') campaignId: mongoose.Schema.Types.ObjectId, @Req() req: any) {
         return this.campaignService.deleteCampaign(campaignId, req);
     }
 
     @Put(':campaignId')
-    @UseGuards(AuthGuard)
+    @UseGuards(AuthGuard, UserGuard)
     editCampaign(@Param('campaignId') campaignId: mongoose.Schema.Types.ObjectId, @Body() updateCampaignDto: UpdateCampaignDto, @Req() req: any) {
         return this.campaignService.editCampaign(campaignId, updateCampaignDto, req);
     }

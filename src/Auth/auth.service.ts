@@ -18,6 +18,7 @@ export class AuthService {
             const compareResult = await bcrypt.compare(password, findUser.password);
             if (compareResult) {
                 const payload = { _id:findUser._id, email: findUser.email, isAdmin: findUser.isAdmin, role: findUser.role, workspaceID: findUser.workspaceId };
+                console.log(payload);
                 const token = this.jwtService.sign(payload, { secret: process.env.JWT_KEY });
                 return token;
             }

@@ -41,12 +41,10 @@ export class MessageService {
     //add message----------------------------------------------------------------
     async addMessage({createdBy, ...messageDto}: MessageDto, req: any) {
         try {
-            const role = req.users.role;
-            if (role === "viewer") throw new UnauthorizedException;
             const findUser = await this.userModel.findById(req.users._id).exec();
             if (!findUser) throw new NotFoundException("User not found");
-            const findWorkspace = await this.workspaceModel.findOne({ _id: req.users.workspaceId }).exec();
-            if (!findWorkspace) throw new NotFoundException("Workspace not found");
+            // const findWorkspace = await this.workspaceModel.findOne({ _id: req.users.workspaceId }).exec();
+            // if (!findWorkspace) throw new NotFoundException("Workspace not found");
 
             const newMessage = new this.messageModel({ createdBy: req.users._id, ...messageDto });
             const savedMessage = await newMessage.save();
@@ -61,9 +59,6 @@ export class MessageService {
     //delete message by ID----------------------------------------------------------
     async deleteMessage(messageId: mongoose.Schema.Types.ObjectId, req: any) {
         try {
-            const role = req.users.role;
-            if (role === "viewer") throw new UnauthorizedException;
-
             const deleteMessage = await this.messageModel.findOneAndDelete({ _id: messageId }).exec();
             if (!deleteMessage) throw new NotFoundException("message not found");
             return deleteMessage;
@@ -77,9 +72,6 @@ export class MessageService {
     //edit message
     async editMessage(messageId: mongoose.Schema.Types.ObjectId, updateMessage: UpdateMessageDto, req: any) {
         try {
-            const role = req.users.role;
-            if (role === "viewer") throw new UnauthorizedException;
-
             const editMessage = await this.messageModel.findOneAndUpdate({ _id: messageId }, { ...updateMessage }, { returnDocument: "after" }).exec();
             if (!editMessage) throw new NotFoundException("message not found");
             return editMessage;
