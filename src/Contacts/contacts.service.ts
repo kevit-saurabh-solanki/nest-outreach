@@ -9,8 +9,8 @@ import { WorkspaceSchema } from "src/Workspace/workspace.schema";
 @Injectable()
 export class ContactsService {
     constructor(@InjectModel(ContactsSchema.name) private contactModel: Model<ContactsSchema>,
-                @InjectModel(UsersSchema.name) private userModel: Model<UsersSchema>,
-                @InjectModel(WorkspaceSchema.name) private workspaceModel: Model<WorkspaceSchema>) { }
+        @InjectModel(UsersSchema.name) private userModel: Model<UsersSchema>,
+        @InjectModel(WorkspaceSchema.name) private workspaceModel: Model<WorkspaceSchema>) { }
 
     //get all contacts------------------------------------------------------------
     async getAllContacts() {
@@ -38,11 +38,11 @@ export class ContactsService {
     }
 
     //add contact--------------------------------------------------------------------
-    async addContact({...contactDto}: ContactsDto, req: any) {
+    async addContact({ ...contactDto }: ContactsDto, req: any) {
         try {
-            const findContact = await this.contactModel.findOne({ $and : [{phoneNumber: contactDto.phoneNumber}, {workspaceId: contactDto.workspaceId}] }).exec();
+            const findContact = await this.contactModel.findOne({ $and: [{ phoneNumber: contactDto.phoneNumber }, { workspaceId: contactDto.workspaceId }] }).exec();
             if (findContact) throw new ConflictException("Contact already exist in the workspace");
-            const newContact = new this.contactModel({createdBy: req.users._id, ...contactDto});
+            const newContact = new this.contactModel({ createdBy: req.users._id, ...contactDto });
             const savedContact = await newContact.save();
             return savedContact;
         }
@@ -66,15 +66,31 @@ export class ContactsService {
     }
 
     //edit contact---------------------------------------------------------------------
-    async editContact(contactId: mongoose.Schema.Types.ObjectId, {...updateContactDto}: UpdateContactsDto) {
+    async editContact(contactId: mongoose.Schema.Types.ObjectId, { ...updateContactDto }: UpdateContactsDto) {
         try {
-            const findContact = await this.contactModel.findOne({ $and : [{phoneNumber: updateContactDto.phoneNumber}, {workspaceId: updateContactDto.workspaceId}] }).exec();
+            const findContact = await this.contactModel.findOne({ $and: [{ phoneNumber: updateContactDto.phoneNumber }, { workspaceId: updateContactDto.workspaceId }] }).exec();
             if (findContact) throw new ConflictException("Contact already exist in the workspace");
             const editContact = await this.contactModel.findByIdAndUpdate({ _id: contactId }, { ...updateContactDto }, { returnDocument: "after" }).exec();
             if (!editContact) throw new NotFoundException("Contact not found");
             return editContact;
         }
-        catch(err) {
+        catch (err) {
+            console.log(err);
+            return err;
+        }
+    }
+
+    //get contact by workspace id
+    async getContactByWorkspaceId(req: any) {
+        try {
+            const userId = req.users._id;
+            const user = await this.userModel.findById(userId).exec();
+            if (!user || !user.workspaceId) throw new NotFoundException('user not found');
+
+            const contacts = await this.contactModel.find({ workspaceId: user.workspaceId }).exec();
+            return contacts;
+        }
+        catch (err) {
             console.log(err);
             return err;
         }

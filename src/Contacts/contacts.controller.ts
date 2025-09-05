@@ -9,10 +9,16 @@ import { UserGuard } from "src/Auth/user.guard";
 export class ContactsControl {
     constructor(private contactService: ContactsService) { }
 
+    // @Get()
+    // @UseGuards(AuthGuard)
+    // getAllContacts() {
+    //     return this.contactService.getAllContacts();
+    // }
+
     @Get()
     @UseGuards(AuthGuard)
-    getAllContacts() {
-        return this.contactService.getAllContacts();
+    getContactByWorkspaceId(@Req() req: any) {
+        return this.contactService.getContactByWorkspaceId(req);
     }
 
     @Get(':contactId')
