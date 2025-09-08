@@ -11,8 +11,6 @@ export class WorkspaceService {
     //Create workspace--------------------------------------------------------------
     async createWorkspace(workspaceDto: WorkspaceDto) {
         try {
-            const findWorkspace = await this.workspaceModel.findOne({ _id: workspaceDto._id }).exec();
-            if (findWorkspace) throw new ConflictException("workspace already exist");
             const newWorkspace = new this.workspaceModel(workspaceDto);
             const savedWorkspace = await newWorkspace.save();
             return savedWorkspace;

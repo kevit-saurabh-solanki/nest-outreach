@@ -68,8 +68,6 @@ export class ContactsService {
     //edit contact---------------------------------------------------------------------
     async editContact(contactId: mongoose.Schema.Types.ObjectId, { ...updateContactDto }: UpdateContactsDto) {
         try {
-            const findContact = await this.contactModel.findOne({ $and: [{ phoneNumber: updateContactDto.phoneNumber }, { workspaceId: updateContactDto.workspaceId }] }).exec();
-            if (findContact) throw new ConflictException("Contact already exist in the workspace");
             const editContact = await this.contactModel.findByIdAndUpdate({ _id: contactId }, { ...updateContactDto }, { returnDocument: "after" }).exec();
             if (!editContact) throw new NotFoundException("Contact not found");
             return editContact;

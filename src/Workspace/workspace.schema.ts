@@ -4,9 +4,6 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 export class WorkspaceSchema {
 
     @Prop({ required: true })
-    _id: string;
-
-    @Prop({ required: true })
     name: string;
 
     @Prop({ required: true })
