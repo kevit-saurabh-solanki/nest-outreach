@@ -14,7 +14,7 @@ export class ContactsSchema {
     tags: string[];
 
     @Prop({ required: true, ref: 'WorkspaceSchema' })
-    workspaceId: string;
+    workspaceId: mongoose.Schema.Types.ObjectId;
 
     @Prop({ required: true, ref: 'UsersSchema' })
     createdBy: mongoose.Schema.Types.ObjectId;

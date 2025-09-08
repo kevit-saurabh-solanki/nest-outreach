@@ -17,7 +17,7 @@ export class CampaignSchema {
     status: string;
 
     @Prop({ required: true, ref: "WorkspaceSchema" })
-    workspaceId: string;
+    workspaceId: mongoose.Schema.Types.ObjectId;
 
 }
 

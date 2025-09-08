@@ -4,10 +4,6 @@ export class WorkspaceDto {
 
     @IsNotEmpty()
     @IsString()
-    _id: string;
-
-    @IsNotEmpty()
-    @IsString()
     name: string;
 
     @IsNotEmpty()

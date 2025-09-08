@@ -13,7 +13,7 @@ export class AuthService {
     async loginUser({ email, password }: AuthDto) {
         try {
             const findUser = await this.usersModel.findOne({ email: email }).exec();
-            if (!findUser || !findUser.workspaceId) throw new HttpException("User Not found", 404);
+            if (!findUser) throw new HttpException("User Not found", 404);
 
             const compareResult = await bcrypt.compare(password, findUser.password);
             if (compareResult) {
