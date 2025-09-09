@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsString } from "class-validator";
+import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
 import * as mongoose from 'mongoose'
 
 export class MessageDto {
@@ -16,27 +16,27 @@ export class MessageDto {
     content: string;
 
     @IsNotEmpty()
-    @IsNumber()
-    workspaceId: number;
-
-    @IsNotEmpty()
-    createdBy: mongoose.Schema.Types.ObjectId;
+    @IsString()
+    workspaceId: string;
 
 }
 
 export class UpdateMessageDto {
 
+    @IsOptional()
     @IsString()
-    title: string;
+    title?: string;
 
+    @IsOptional()
     @IsString()
-    messageType: string;
+    messageType?: string;
 
+    @IsOptional()
     @IsString()
-    content: string;
+    content?: string;
 
-    @IsNumber()
-    workspaceId: number;
+    @IsOptional()
+    @IsString()
+    workspaceId?: string;
 
-    createdBy: mongoose.Schema.Types.ObjectId;
 }

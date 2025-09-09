@@ -3,6 +3,7 @@ import { MessageService } from "./message.service";
 import { AuthGuard } from "src/Auth/auth.guard";
 import mongoose from "mongoose";
 import { MessageDto, UpdateMessageDto } from "./message.dto";
+import { UserGuard } from "src/Auth/user.guard";
 
 @Controller('messages')
 export class MessageControl {
@@ -21,20 +22,20 @@ export class MessageControl {
     }
 
     @Post()
-    @UseGuards(AuthGuard)
+    @UseGuards(AuthGuard, UserGuard)
     addMessage(@Body() messageDto: MessageDto, @Req() req: any) {
         return this.messageService.addMessage(messageDto, req);
     }
 
     @Delete(':messageId')
-    @UseGuards(AuthGuard)
-    deleteMessage(@Param('messageId') messageId: mongoose.Schema.Types.ObjectId, @Req() req: any) {
-        return this.messageService.deleteMessage(messageId, req);
+    @UseGuards(AuthGuard, UserGuard)
+    deleteMessage(@Param('messageId') messageId: mongoose.Schema.Types.ObjectId) {
+        return this.messageService.deleteMessage(messageId);
     }
 
     @Put(':messageId')
-    @UseGuards(AuthGuard)
-    editMessage(@Param('messageId') messageId: mongoose.Schema.Types.ObjectId, @Body() updateMessageDto: UpdateMessageDto, @Req() req: any) {
-        return this.messageService.editMessage(messageId, updateMessageDto, req);
+    @UseGuards(AuthGuard, UserGuard)
+    editMessage(@Param('messageId') messageId: mongoose.Schema.Types.ObjectId, @Body() updateMessageDto: UpdateMessageDto) {
+        return this.messageService.editMessage(messageId, updateMessageDto);
     } 
 }

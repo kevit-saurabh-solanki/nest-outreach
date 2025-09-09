@@ -1,10 +1,6 @@
-import { IsNotEmpty, IsNumber, IsString } from "class-validator";
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
 
 export class WorkspaceDto {
-
-    @IsNotEmpty()
-    @IsNumber()
-    _id: number;
 
     @IsNotEmpty()
     @IsString()
@@ -18,10 +14,12 @@ export class WorkspaceDto {
 
 export class UpdateWorkspaceDto {
 
+    @IsOptional()
     @IsString()
-    name: string;
+    name?: string;
 
     @IsString()
-    description: string;
+    @IsOptional()
+    description?: string;
 
 }

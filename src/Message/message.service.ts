@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { MessageSchema } from "./message.schema";
 import mongoose, { Model } from 'mongoose'
@@ -39,16 +39,9 @@ export class MessageService {
     }
 
     //add message----------------------------------------------------------------
-    async addMessage(messageDto: MessageDto, req: any) {
+    async addMessage({...messageDto}: MessageDto, req: any) {
         try {
-            const role = req.users.role;
-            if (role === "viewer") throw new UnauthorizedException;
-            const findUser = await this.userModel.findById(messageDto.createdBy).exec();
-            if (!findUser) throw new NotFoundException("User not found");
-            const findWorkspace = await this.workspaceModel.findById(messageDto.workspaceId).exec();
-            if (!findWorkspace) throw new NotFoundException("Workspace not found");
-
-            const newMessage = new this.messageModel(messageDto);
+            const newMessage = new this.messageModel({ createdBy: req.users._id, ...messageDto });
             const savedMessage = await newMessage.save();
             return savedMessage
         }
@@ -59,11 +52,8 @@ export class MessageService {
     }
 
     //delete message by ID----------------------------------------------------------
-    async deleteMessage(messageId: mongoose.Schema.Types.ObjectId, req: any) {
+    async deleteMessage(messageId: mongoose.Schema.Types.ObjectId) {
         try {
-            const role = req.users.role;
-            if (role === "viewer") throw new UnauthorizedException;
-
             const deleteMessage = await this.messageModel.findOneAndDelete({ _id: messageId }).exec();
             if (!deleteMessage) throw new NotFoundException("message not found");
             return deleteMessage;
@@ -75,11 +65,8 @@ export class MessageService {
     }
 
     //edit message
-    async editMessage(messageId: mongoose.Schema.Types.ObjectId, updateMessage: UpdateMessageDto, req: any) {
+    async editMessage(messageId: mongoose.Schema.Types.ObjectId, {...updateMessage}: UpdateMessageDto) {
         try {
-            const role = req.users.role;
-            if (role === "viewer") throw new UnauthorizedException;
-
             const editMessage = await this.messageModel.findOneAndUpdate({ _id: messageId }, { ...updateMessage }, { returnDocument: "after" }).exec();
             if (!editMessage) throw new NotFoundException("message not found");
             return editMessage;

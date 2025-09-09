@@ -39,16 +39,12 @@ export class CampaignService {
     }
 
     //add campaign----------------------------------------------------------------
-    async addCampaign(campaignDto: CampaignDto, req: any) {
+    async addCampaign({...campaignDto }: CampaignDto, req: any) {
         try {
-            const role = req.users.role;
-            if (role === "viewer") throw new UnauthorizedException;
-            const findUser = await this.userModel.findById(campaignDto.createdBy).exec();
-            if (!findUser) throw new NotFoundException("User not found");
             const findWorkspace = await this.workspaceModel.findById(campaignDto.workspaceId).exec();
             if (!findWorkspace) throw new NotFoundException("Workspace not found");
 
-            const newCampaign = new this.campaignModel(campaignDto);
+            const newCampaign = new this.campaignModel({ createdBy: req.users._id, ...campaignDto });
             const savedCampaign = await newCampaign.save();
             return savedCampaign;
         }
@@ -59,11 +55,8 @@ export class CampaignService {
     }
 
     //delete campaign by ID----------------------------------------------------------
-    async deleteCampaign(campaignId: mongoose.Schema.Types.ObjectId, req: any) {
+    async deleteCampaign(campaignId: mongoose.Schema.Types.ObjectId) {
         try {
-            const role = req.users.role;
-            if (role === "viewer") throw new UnauthorizedException;
-
             const deleteCampaign = await this.campaignModel.findOneAndDelete({ _id: campaignId }).exec();
             if (!deleteCampaign) throw new NotFoundException("campaign not found");
             return deleteCampaign;
@@ -75,11 +68,8 @@ export class CampaignService {
     }
 
     //edit campaign
-    async editCampaign(campaignId: mongoose.Schema.Types.ObjectId, updateCampaign: UpdateCampaignDto, req: any) {
+    async editCampaign(campaignId: mongoose.Schema.Types.ObjectId, {...updateCampaign}: UpdateCampaignDto) {
         try {
-            const role = req.users.role;
-            if (role === "viewer") throw new UnauthorizedException;
-
             const editcampaign = await this.campaignModel.findOneAndUpdate({ _id: campaignId }, { ...updateCampaign }, { returnDocument: "after" }).exec();
             if (!editcampaign) throw new NotFoundException("campaign not found");
             return editcampaign;

@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import mongoose from "mongoose";
 
-@Schema()
+@Schema({ timestamps: true })
 export class ContactsSchema {
 
     @Prop({ required: true })
@@ -14,7 +14,7 @@ export class ContactsSchema {
     tags: string[];
 
     @Prop({ required: true, ref: 'WorkspaceSchema' })
-    workspaceId: number;
+    workspaceId: mongoose.Schema.Types.ObjectId;
 
     @Prop({ required: true, ref: 'UsersSchema' })
     createdBy: mongoose.Schema.Types.ObjectId;

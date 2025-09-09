@@ -1,10 +1,7 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 
-@Schema()
+@Schema({ timestamps: true })
 export class WorkspaceSchema {
-
-    @Prop({ required: true })
-    _id: number;
 
     @Prop({ required: true })
     name: string;
@@ -12,8 +9,6 @@ export class WorkspaceSchema {
     @Prop({ required: true })
     description: string;
 
-    @Prop({ required: true, default: new Date().toISOString() })
-    createdAt: string;
 }
 
 export const workspaceSchema = SchemaFactory.createForClass(WorkspaceSchema);

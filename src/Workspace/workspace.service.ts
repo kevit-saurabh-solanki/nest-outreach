@@ -9,12 +9,8 @@ export class WorkspaceService {
     constructor(@InjectModel(WorkspaceSchema.name) private workspaceModel: Model<WorkspaceSchema>) { }
 
     //Create workspace--------------------------------------------------------------
-    async createWorkspace(workspaceDto: WorkspaceDto, req: any) {
+    async createWorkspace(workspaceDto: WorkspaceDto) {
         try {
-            const isAdmin = req.users.isAdmin;
-            if (!isAdmin) throw new UnauthorizedException;
-            const findWorkspace = await this.workspaceModel.findOne({ _id: workspaceDto._id }).exec();
-            if (findWorkspace) throw new ConflictException("workspace already exist");
             const newWorkspace = new this.workspaceModel(workspaceDto);
             const savedWorkspace = await newWorkspace.save();
             return savedWorkspace;
@@ -26,10 +22,8 @@ export class WorkspaceService {
     }
 
     //get all workspace--------------------------------------------------------------
-    async getAllWorkspace(req: any) {
+    async getAllWorkspace() {
         try {
-            const isAdmin = req.users.isAdmin;
-            if (!isAdmin) throw new UnauthorizedException;
             const allWorkspace = await this.workspaceModel.find({}, { createdAt: 0 }).exec();
             return allWorkspace;
         }
@@ -40,11 +34,9 @@ export class WorkspaceService {
     }
 
     //get workspace by Id------------------------------------------------------------
-    async getWorkspaceById(workspaceId: number, req: any) {
+    async getWorkspaceById(workspaceId: string) {
         try {
-            const isAdmin = req.users.isAdmin;
-            if (!isAdmin) throw new UnauthorizedException;
-            const findWorkspace = await this.workspaceModel.findOne({ _id: workspaceId }, { createdAt: 0 }).exec();
+            const findWorkspace = await this.workspaceModel.findOne({ _id: workspaceId }).exec();
             if (!findWorkspace) throw new NotFoundException("workspace not found");
             return findWorkspace;
         }
@@ -55,10 +47,8 @@ export class WorkspaceService {
     }
 
     //delete a workspace by Id-------------------------------------------------------
-    async deleteWorkspaceById(workspaceId: number, req: any) {
+    async deleteWorkspaceById(workspaceId: string) {
         try {
-            const isAdmin = req.users.isAdmin;
-            if (!isAdmin) throw new UnauthorizedException;
             const deleteWorkspace = await this.workspaceModel.findOneAndDelete({ _id: workspaceId }, { returnDocument: "after" }).exec();
             if (!deleteWorkspace) throw new NotFoundException("workspace not found");
             return deleteWorkspace;
@@ -70,10 +60,8 @@ export class WorkspaceService {
     }
 
     //edit a workspace by Id---------------------------------------------------------
-    async editWorkspaceById(workspaceId: number, {...updateWorkspaceDto}: UpdateWorkspaceDto, req: any) {
+    async editWorkspaceById(workspaceId: string, {...updateWorkspaceDto}: UpdateWorkspaceDto) {
         try {
-            const isAdmin = req.users.isAdmin;     
-            if (!isAdmin) throw new UnauthorizedException;
             const editWorkspace = await this.workspaceModel.findOneAndUpdate({ _id: workspaceId }, { ...updateWorkspaceDto }, { returnDocument: "after" }).exec();          
             if (!editWorkspace) throw new NotFoundException("workspace not found");
             return editWorkspace;

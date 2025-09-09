@@ -1,9 +1,7 @@
-import { IsEmail, IsNotEmpty, IsString, IsNumber, IsOptional, IsBoolean } from "class-validator";
-import mongoose from "mongoose";
+import { IsEmail, IsNotEmpty, IsString, IsOptional, IsBoolean, IsArray } from "class-validator";
+
 
 export class UsersDto {
-
-    _id: mongoose.Schema.Types.ObjectId;
 
     @IsEmail()
     @IsNotEmpty()  
@@ -14,31 +12,35 @@ export class UsersDto {
     password: string;
 
     @IsString()
-    @IsNotEmpty()
-    role: string;
-
-    @IsNumber()
-    @IsNotEmpty() 
-    workspaceId: number;
+    @IsOptional()
+    role?: string;
 
     @IsOptional()
     @IsBoolean()  
-    isAdmin?: boolean
+    isAdmin?: boolean;
+
+    @IsString()
+    @IsOptional()
+    workspaceId?: string;
 
 }
 
 export class updateUserDto {
 
+    @IsOptional()
     @IsEmail() 
-    email: string;
+    email?: string;
 
+    @IsOptional()
     @IsString()
-    password: string;
+    password?: string;
 
+    @IsOptional()
     @IsString()
-    role: string;
+    role?: string;
 
-    @IsNumber()
-    workspaceId: number;
+    @IsOptional()
+    @IsString()
+    workspaceId?: string;
     
 }

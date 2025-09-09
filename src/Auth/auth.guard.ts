@@ -19,7 +19,6 @@ export class AuthGuard implements CanActivate {
         }
         catch(err) {
             console.log(err);
-            throw new InternalServerErrorException;
         }
 
         return true;

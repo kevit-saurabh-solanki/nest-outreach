@@ -9,7 +9,7 @@ export class AuthControl {
     @Post()
     async loginUser(@Body() authDto: AuthDto)  {
        const token = await this.authService.loginUser(authDto);
-       if (!token) throw new HttpException("Unauthorized Access", 401);
-       return { access_token: token };
+       if (!token?.token) throw new HttpException("Unauthorized Access", 401);
+       return token;
     }
 }

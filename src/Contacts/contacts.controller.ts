@@ -3,39 +3,46 @@ import { ContactsService } from "./contacts.service";
 import { AuthGuard } from "src/Auth/auth.guard";
 import mongoose from "mongoose";
 import { ContactsDto, UpdateContactsDto } from "./contacts.dto";
+import { UserGuard } from "src/Auth/user.guard";
 
 @Controller('contacts')
 export class ContactsControl {
-    constructor(private contactService: ContactsService) {}
+    constructor(private contactService: ContactsService) { }
+
+    // @Get()
+    // @UseGuards(AuthGuard)
+    // getAllContacts() {
+    //     return this.contactService.getAllContacts();
+    // }
 
     @Get()
     @UseGuards(AuthGuard)
-    getAllContacts(@Req() req: any) {
-        return this.contactService.getAllContacts(req);
+    getContactByWorkspaceId(@Req() req: any) {
+        return this.contactService.getContactByWorkspaceId(req);
     }
 
     @Get(':contactId')
     @UseGuards(AuthGuard)
-    getContactById(@Param('contactId') contactId: mongoose.Schema.Types.ObjectId, @Req() req: any) {
-        return this.contactService.getContactById(contactId, req);
+    getContactById(@Param('contactId') contactId: mongoose.Schema.Types.ObjectId) {
+        return this.contactService.getContactById(contactId);
     }
 
     @Post()
-    @UseGuards(AuthGuard)
+    @UseGuards(AuthGuard, UserGuard)
     addContact(@Body() contactDto: ContactsDto, @Req() req: any) {
         return this.contactService.addContact(contactDto, req);
     }
 
     @Put(':contactId')
-    @UseGuards(AuthGuard)
-    editContact(@Param('contactId') contactId: mongoose.Schema.Types.ObjectId, @Body() updateContactDto: UpdateContactsDto, @Req() req: any) {
-        return this.contactService.editContact(contactId, updateContactDto, req);
+    @UseGuards(AuthGuard, UserGuard)
+    editContact(@Param('contactId') contactId: mongoose.Schema.Types.ObjectId, @Body() updateContactDto: UpdateContactsDto) {
+        return this.contactService.editContact(contactId, updateContactDto);
     }
 
     @Delete(':contactId')
-    @UseGuards(AuthGuard)
-    deleteContact(@Param('contactId') contactId: mongoose.Schema.Types.ObjectId, @Req() req: any) {
-        return this.contactService.deleteContact(contactId, req);
+    @UseGuards(AuthGuard, UserGuard)
+    deleteContact(@Param('contactId') contactId: mongoose.Schema.Types.ObjectId) {
+        return this.contactService.deleteContact(contactId);
     }
-    
+
 }
