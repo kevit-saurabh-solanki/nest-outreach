@@ -28,7 +28,7 @@ export class MessageService {
     //get message by Id--------------------------------------------------------
     async getMessageById(messageId: mongoose.Schema.Types.ObjectId) {
         try {
-            const singleMessage = await this.messageModel.findOne({ _id: messageId }).exec();
+            const singleMessage = await this.messageModel.findOne({ _id: messageId }).populate(['workspaceId', 'createdBy']).exec();
             if (!singleMessage) throw new NotFoundException("Message not found");
             return singleMessage;
         }
