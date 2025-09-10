@@ -7,8 +7,11 @@ export class MessageSchema {
     @Prop({ required: true })
     title: string;
 
-    @Prop({ required: true, enum: [ "text", "image" ] })
+    @Prop({ required: true, enum: [ "Text", "Text and Image" ] })
     messageType: string;
+
+    @Prop({ required: false })
+    imagePath?: string;
 
     @Prop({ required: true })
     content: string;
