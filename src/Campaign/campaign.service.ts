@@ -67,12 +67,30 @@ export class CampaignService {
         }
     }
 
-    //edit campaign
+    //edit campaign-----------------------------------------
     async editCampaign(campaignId: mongoose.Schema.Types.ObjectId, {...updateCampaign}: UpdateCampaignDto) {
         try {
             const editcampaign = await this.campaignModel.findOneAndUpdate({ _id: campaignId }, { ...updateCampaign }, { returnDocument: "after" }).exec();
             if (!editcampaign) throw new NotFoundException("campaign not found");
             return editcampaign;
+        }
+        catch (err) {
+            console.log(err);
+            return err;
+        }
+    }
+
+    async getCampaignByWorkspaceId(req: any) {
+        try {
+            const userId = req.users._id;
+            const user = await this.userModel.findById(userId).exec();
+            if (!user || !user.workspaceId) throw new NotFoundException('user not found');
+
+           const campaigns = await this.campaignModel.find({
+                workspaceId: { $in: user.workspaceId }
+            }).exec();
+
+            return campaigns;
         }
         catch (err) {
             console.log(err);

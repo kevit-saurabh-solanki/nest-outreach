@@ -15,13 +15,13 @@ export class WorkspaceControl {
     }
 
     @Get()
-    @UseGuards(AuthGuard, AdminGuard)
+    @UseGuards(AuthGuard)
     getAllWorkspace() {
         return this.workspaceService.getAllWorkspace();
     }
 
     @Get(':workspaceId')
-    @UseGuards(AuthGuard, AdminGuard)
+    @UseGuards(AuthGuard)
     getWorkspaceById(@Param('workspaceId') workspaceId: string) {
         return this.workspaceService.getWorkspaceById(workspaceId);
     }

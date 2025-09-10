@@ -9,10 +9,16 @@ import { UserGuard } from "src/Auth/user.guard";
 export class CampaignController {
     constructor(private campaignService: CampaignService) { }
 
+    // @Get()
+    // @UseGuards(AuthGuard)
+    // getAllCampaign() {
+    //     return this.campaignService.getAllCampaign();
+    // }
+
     @Get()
     @UseGuards(AuthGuard)
-    getAllCampaign() {
-        return this.campaignService.getAllCampaign();
+    getContactByWorkspaceId(@Req() req: any) {
+        return this.campaignService.getCampaignByWorkspaceId(req);
     }
 
     @Get(':campaignId')

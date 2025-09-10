@@ -15,10 +15,9 @@ export class ContactsControl {
     //     return this.contactService.getAllContacts();
     // }
 
-    @Get()
-    @UseGuards(AuthGuard)
-    getContactByWorkspaceId(@Req() req: any) {
-        return this.contactService.getContactByWorkspaceId(req);
+    @Get(':workspaceId')
+    async getContacts(@Param('workspaceId') workspaceId: string) {
+        return this.contactService.getContactsByWorkspace(workspaceId);
     }
 
     @Get(':contactId')

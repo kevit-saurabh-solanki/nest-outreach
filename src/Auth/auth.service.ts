@@ -1,4 +1,4 @@
-import { HttpException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from "@nestjs/common";
+import { HttpException, Injectable } from "@nestjs/common";
 import { AuthDto } from "./auth.dto";
 import { InjectModel } from "@nestjs/mongoose";
 import { UsersSchema } from "src/Users/users.schema";
@@ -19,7 +19,7 @@ export class AuthService {
             if (compareResult) {
                 const payload = { _id:findUser._id, email: findUser.email };
                 const token = this.jwtService.sign(payload, { secret: process.env.JWT_KEY });
-                return {token: token, workspaceId: findUser.workspaceId };
+                return {token: token};
             }
             else {
                 throw new HttpException("Unauthorized Access", 401);

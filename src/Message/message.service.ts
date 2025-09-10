@@ -39,7 +39,7 @@ export class MessageService {
     }
 
     //add message----------------------------------------------------------------
-    async addMessage({...messageDto}: MessageDto, req: any) {
+    async addMessage({ ...messageDto }: MessageDto, req: any) {
         try {
             const newMessage = new this.messageModel({ createdBy: req.users._id, ...messageDto });
             const savedMessage = await newMessage.save();
@@ -65,7 +65,7 @@ export class MessageService {
     }
 
     //edit message
-    async editMessage(messageId: mongoose.Schema.Types.ObjectId, {...updateMessage}: UpdateMessageDto) {
+    async editMessage(messageId: mongoose.Schema.Types.ObjectId, { ...updateMessage }: UpdateMessageDto) {
         try {
             const editMessage = await this.messageModel.findOneAndUpdate({ _id: messageId }, { ...updateMessage }, { returnDocument: "after" }).exec();
             if (!editMessage) throw new NotFoundException("message not found");
@@ -75,5 +75,12 @@ export class MessageService {
             console.log(err);
             return err;
         }
+    }
+
+    //get contact by workspace id------------------------------------------
+    async getMessagesByWorkspace(workspaceId: string) {
+        const messages = await this.messageModel.find({ workspaceId }).exec();
+        if (!messages) throw new NotFoundException('No messages found for this workspace');
+        return messages;
     }
 }
