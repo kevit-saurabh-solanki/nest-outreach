@@ -9,21 +9,22 @@ import { UserGuard } from "src/Auth/user.guard";
 export class ContactsControl {
     constructor(private contactService: ContactsService) { }
 
-    // @Get()
-    // @UseGuards(AuthGuard)
-    // getAllContacts() {
-    //     return this.contactService.getAllContacts();
-    // }
-
-    @Get(':workspaceId')
-    async getContacts(@Param('workspaceId') workspaceId: string) {
-        return this.contactService.getContactsByWorkspace(workspaceId);
+    @Get()
+    @UseGuards(AuthGuard)
+    getAllContacts() {
+        return this.contactService.getAllContacts();
     }
 
     @Get(':contactId')
     @UseGuards(AuthGuard)
     getContactById(@Param('contactId') contactId: mongoose.Schema.Types.ObjectId) {
         return this.contactService.getContactById(contactId);
+    }
+
+    @Get('workspace/:workspaceId')
+    @UseGuards(AuthGuard)
+    async getContacts(@Param('workspaceId') workspaceId: string) {
+        return this.contactService.getContactsByWorkspace(workspaceId);
     }
 
     @Post()

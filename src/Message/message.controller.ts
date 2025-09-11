@@ -15,15 +15,16 @@ export class MessageControl {
     //     return this.messageService.getAllMessage();
     // }
 
-    @Get(':workspaceId')
-    async getMessages(@Param('workspaceId') workspaceId: string) {
-        return this.messageService.getMessagesByWorkspace(workspaceId);
-    }
-
     @Get(':messageId')
     @UseGuards(AuthGuard)
     getMessageById(@Param('messageId') messageId: mongoose.Schema.Types.ObjectId) {
         return this.messageService.getMessageById(messageId);
+    }
+
+    @Get('workspace/:workspaceId')
+    @UseGuards(AuthGuard)
+    async getMessages(@Param('workspaceId') workspaceId: string) {
+        return this.messageService.getMessagesByWorkspace(workspaceId);
     }
 
     @Post()

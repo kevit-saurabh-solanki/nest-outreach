@@ -27,7 +27,7 @@ export class ContactsService {
     //get contact by id--------------------------------------------------------------
     async getContactById(contactId: mongoose.Schema.Types.ObjectId) {
         try {
-            const foundContact = await this.contactModel.findById(contactId).populate(['workspaceId', 'createdBy']).exec();
+            const foundContact = await this.contactModel.findById(contactId).populate(['workspaceId name', 'createdBy email']).exec();
             if (!foundContact) throw new NotFoundException("Contact not found");
             return foundContact;
         }
