@@ -1,4 +1,4 @@
-import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
+import { IsArray, IsNotEmpty, IsOptional, IsString } from "class-validator";
 import mongoose from "mongoose";
 
 export class CampaignDto {
@@ -9,11 +9,15 @@ export class CampaignDto {
 
     @IsNotEmpty()
     @IsString()
-    message: string;
+    messageId: string;
 
     @IsNotEmpty()
     @IsArray()
     targetTags: string[];
+
+    @IsNotEmpty()
+    @IsString()
+    content: string;
 
     @IsNotEmpty()
     @IsString()
@@ -38,6 +42,10 @@ export class UpdateCampaignDto {
     @IsOptional()
     @IsArray()
     targetTags?: string[];
+
+    @IsOptional()
+    @IsString()
+    content?: string[];
 
     @IsOptional()
     @IsString()

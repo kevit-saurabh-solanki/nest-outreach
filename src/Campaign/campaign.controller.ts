@@ -9,22 +9,22 @@ import { UserGuard } from "src/Auth/user.guard";
 export class CampaignController {
     constructor(private campaignService: CampaignService) { }
 
-    // @Get()
-    // @UseGuards(AuthGuard)
-    // getAllCampaign() {
-    //     return this.campaignService.getAllCampaign();
-    // }
-
     @Get()
     @UseGuards(AuthGuard)
-    getContactByWorkspaceId(@Req() req: any) {
-        return this.campaignService.getCampaignByWorkspaceId(req);
+    getAllCampaign() {
+        return this.campaignService.getAllCampaign();
     }
 
     @Get(':campaignId')
     @UseGuards(AuthGuard)
     getCampaignById(@Param('campaignId') campaignId: mongoose.Schema.Types.ObjectId) {
         return this.campaignService.getCampaignById(campaignId);
+    }
+
+    @Get('workspace/:workspaceId')
+    @UseGuards(AuthGuard)
+    async getMessages(@Param('workspaceId') workspaceId: string) {
+        return this.campaignService.getCampaignByWorkspace(workspaceId);
     }
 
     @Post()

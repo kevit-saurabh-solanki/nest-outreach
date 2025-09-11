@@ -28,7 +28,7 @@ export class CampaignService {
     //get campaign by Id--------------------------------------------------------
     async getCampaignById(campaignId: mongoose.Schema.Types.ObjectId) {
         try {
-            const singleCampaign = await this.campaignModel.findOne({ _id: campaignId }).exec();
+            const singleCampaign = await this.campaignModel.findOne({ _id: campaignId }).populate(["workspaceId name", "createdBy email"]).exec();
             if (!singleCampaign) throw new NotFoundException("Campaign not found");
             return singleCampaign;
         }
@@ -67,7 +67,7 @@ export class CampaignService {
         }
     }
 
-    //edit campaign-----------------------------------------
+    //edit campaign---------------------------------------------------------------------------------------------
     async editCampaign(campaignId: mongoose.Schema.Types.ObjectId, {...updateCampaign}: UpdateCampaignDto) {
         try {
             const editcampaign = await this.campaignModel.findOneAndUpdate({ _id: campaignId }, { ...updateCampaign }, { returnDocument: "after" }).exec();
@@ -80,21 +80,10 @@ export class CampaignService {
         }
     }
 
-    async getCampaignByWorkspaceId(req: any) {
-        try {
-            const userId = req.users._id;
-            const user = await this.userModel.findById(userId).exec();
-            if (!user || !user.workspaceId) throw new NotFoundException('user not found');
-
-           const campaigns = await this.campaignModel.find({
-                workspaceId: { $in: user.workspaceId }
-            }).exec();
-
-            return campaigns;
-        }
-        catch (err) {
-            console.log(err);
-            return err;
-        }
+    //get campaign by workspaceId--------------------------------------------------------------------------------------------------------
+    async getCampaignByWorkspace(workspaceId: string) {
+        const messages = await this.campaignModel.find({ workspaceId }).exec();
+        if (!messages) throw new NotFoundException('No campaigns found for this workspace');
+        return messages;
     }
 }
