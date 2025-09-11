@@ -22,7 +22,7 @@ export class UsersControl {
     }
 
     @Get('/:userId')
-    @UseGuards(AuthGuard, AdminGuard)
+    @UseGuards(AuthGuard)
     getUserById(@Param('userId') userId: mongoose.Schema.Types.ObjectId) {
         return this.usersService.getUserById(userId);
     }

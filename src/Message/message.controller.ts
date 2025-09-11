@@ -7,18 +7,24 @@ import { UserGuard } from "src/Auth/user.guard";
 
 @Controller('messages')
 export class MessageControl {
-    constructor(private messageService: MessageService) {}
+    constructor(private messageService: MessageService) { }
 
-    @Get()
-    @UseGuards(AuthGuard)
-    getAllMessage() {
-        return this.messageService.getAllMessage();
-    }
+    // @Get()
+    // @UseGuards(AuthGuard)
+    // getAllMessage() {
+    //     return this.messageService.getAllMessage();
+    // }
 
     @Get(':messageId')
     @UseGuards(AuthGuard)
     getMessageById(@Param('messageId') messageId: mongoose.Schema.Types.ObjectId) {
         return this.messageService.getMessageById(messageId);
+    }
+
+    @Get('workspace/:workspaceId')
+    @UseGuards(AuthGuard)
+    async getMessages(@Param('workspaceId') workspaceId: string) {
+        return this.messageService.getMessagesByWorkspace(workspaceId);
     }
 
     @Post()
@@ -37,5 +43,5 @@ export class MessageControl {
     @UseGuards(AuthGuard, UserGuard)
     editMessage(@Param('messageId') messageId: mongoose.Schema.Types.ObjectId, @Body() updateMessageDto: UpdateMessageDto) {
         return this.messageService.editMessage(messageId, updateMessageDto);
-    } 
+    }
 }

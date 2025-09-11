@@ -27,7 +27,7 @@ export class ContactsService {
     //get contact by id--------------------------------------------------------------
     async getContactById(contactId: mongoose.Schema.Types.ObjectId) {
         try {
-            const foundContact = await this.contactModel.findById(contactId).populate(['workspaceId', 'createdBy']).exec();
+            const foundContact = await this.contactModel.findById(contactId).populate(['workspaceId name', 'createdBy email']).exec();
             if (!foundContact) throw new NotFoundException("Contact not found");
             return foundContact;
         }
@@ -78,19 +78,10 @@ export class ContactsService {
         }
     }
 
-    //get contact by workspace id
-    async getContactByWorkspaceId(req: any) {
-        try {
-            const userId = req.users._id;
-            const user = await this.userModel.findById(userId).exec();
-            if (!user || !user.workspaceId) throw new NotFoundException('user not found');
-
-            const contacts = await this.contactModel.find({ workspaceId: user.workspaceId }).exec();
-            return contacts;
-        }
-        catch (err) {
-            console.log(err);
-            return err;
-        }
+    //get contact by workspace id------------------------------------------
+    async getContactsByWorkspace(workspaceId: string) {
+        const contacts = await this.contactModel.find({ workspaceId }).exec();
+        if (!contacts) throw new NotFoundException('No contacts found for this workspace');
+        return contacts;
     }
 }

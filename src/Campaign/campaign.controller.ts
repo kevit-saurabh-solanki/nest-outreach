@@ -21,6 +21,12 @@ export class CampaignController {
         return this.campaignService.getCampaignById(campaignId);
     }
 
+    @Get('workspace/:workspaceId')
+    @UseGuards(AuthGuard)
+    async getMessages(@Param('workspaceId') workspaceId: string) {
+        return this.campaignService.getCampaignByWorkspace(workspaceId);
+    }
+
     @Post()
     @UseGuards(AuthGuard, UserGuard)
     addCampaign(@Body() campaignDto: CampaignDto, @Req() req: any) {

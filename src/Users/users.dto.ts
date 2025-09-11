@@ -19,9 +19,8 @@ export class UsersDto {
     @IsBoolean()  
     isAdmin?: boolean;
 
-    @IsString()
     @IsOptional()
-    workspaceId?: string;
+    workspaceId?: string[];
 
 }
 
@@ -40,7 +39,6 @@ export class updateUserDto {
     role?: string;
 
     @IsOptional()
-    @IsString()
-    workspaceId?: string;
+    workspaceId?: string[];
     
 }

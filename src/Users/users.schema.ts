@@ -14,7 +14,7 @@ export class UsersSchema {
     role?: string;
 
     @Prop({ required: false, ref: 'WorkspaceSchema' })
-    workspaceId?: mongoose.Schema.Types.ObjectId;
+    workspaceId?: mongoose.Schema.Types.ObjectId[];
 
     @Prop({ required: false })
     isAdmin?: boolean;
