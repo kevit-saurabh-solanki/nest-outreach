@@ -19,9 +19,9 @@ export class CampaignDto {
     @IsString()
     content: string;
 
-    @IsNotEmpty()
+    @IsOptional()
     @IsString()
-    status: string;
+    status?: string;
 
     @IsNotEmpty()
     @IsString()

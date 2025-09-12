@@ -28,7 +28,7 @@ export class CampaignService {
     //get campaign by Id--------------------------------------------------------
     async getCampaignById(campaignId: mongoose.Schema.Types.ObjectId) {
         try {
-            const singleCampaign = await this.campaignModel.findOne({ _id: campaignId }).populate(["workspaceId name", "createdBy email"]).exec();
+            const singleCampaign = await this.campaignModel.findOne({ _id: campaignId }).populate(["workspaceId name", "createdBy email", "messageId title"]).exec();
             if (!singleCampaign) throw new NotFoundException("Campaign not found");
             return singleCampaign;
         }
