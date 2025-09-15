@@ -16,6 +16,9 @@ export class CampaignSchema {
     @Prop({ required: true })
     content: string;
 
+    @Prop({ required: true, enum: ["Text", "Text and Image"] })
+    messageType: string;
+
     @Prop({ required: false })
     imagePath?: string;
 
@@ -27,6 +30,29 @@ export class CampaignSchema {
 
     @Prop({ required: true, ref: "UsersSchema" })
     createdBy: mongoose.Schema.Types.ObjectId;
+
+    @Prop({
+        type: {
+            text: { type: String },
+            type: { type: String, enum: ["Text", "Text and Image"] },
+            imagePath: { type: String },
+        },
+    })
+    launchedMessage?: {
+        text: string;
+        type: string;
+        imagePath?: string;
+    };
+
+    @Prop({ type: [Object] })
+    launchedContacts?: {
+        _id: string;
+        name: string;
+        phoneNumber: string;
+    }[];
+
+    @Prop()
+    launchedAt?: Date;
 
 }
 

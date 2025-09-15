@@ -19,17 +19,34 @@ export class CampaignDto {
     @IsString()
     content: string;
 
+    @IsNotEmpty()
+    @IsString()
+    messageType: string;
+
     @IsOptional()
     @IsString()
     imagePath?: string;
 
-    @IsOptional()
-    @IsString()
-    status?: string;
-
     @IsNotEmpty()
     @IsString()
     workspaceId: string;
+
+    @IsOptional()
+    launchedMessage?: {
+        text: string;
+        type: 'Text' | 'Text and Image';
+        imagePath?: string;
+    };
+
+    @IsOptional()
+    launchedContacts?: {
+        _id: string;
+        name: string;
+        phone: string;
+    }[];
+
+    @IsOptional()
+    launchedAt?: Date;
 
 }
 
@@ -54,10 +71,6 @@ export class UpdateCampaignDto {
     @IsOptional()
     @IsString()
     imagePath?: string;
-
-    @IsOptional()
-    @IsString()
-    status?: string;
 
     @IsOptional()
     @IsString()
