@@ -1,4 +1,4 @@
-import { Controller, UseGuards, Param, Get, Post, Req, Body, Delete, Put } from "@nestjs/common";
+import { Controller, UseGuards, Param, Get, Post, Req, Body, Delete, Put, Query } from "@nestjs/common";
 import { CampaignService } from "./campaign.service";
 import { AuthGuard } from "src/Auth/auth.guard";
 import mongoose from "mongoose";
@@ -15,10 +15,10 @@ export class CampaignController {
         return this.campaignService.getAllCampaign();
     }
 
-    @Get(':campaignId')
+    @Get('campaign-per-day')
     @UseGuards(AuthGuard)
-    getCampaignById(@Param('campaignId') campaignId: mongoose.Schema.Types.ObjectId) {
-        return this.campaignService.getCampaignById(campaignId);
+    getCampaignPerDay(@Query('start') start: string, @Query('end') end: string) {
+        return this.campaignService.getCampaignsPerDay(start, end);
     }
 
     @Get('workspace/:workspaceId')
@@ -43,5 +43,11 @@ export class CampaignController {
     @UseGuards(AuthGuard, UserGuard)
     editCampaign(@Param('campaignId') campaignId: mongoose.Schema.Types.ObjectId, @Body() updateCampaignDto: UpdateCampaignDto) {
         return this.campaignService.editCampaign(campaignId, updateCampaignDto);
+    }
+
+    @Get(':campaignId')
+    @UseGuards(AuthGuard)
+    getCampaignById(@Param('campaignId') campaignId: mongoose.Schema.Types.ObjectId) {
+        return this.campaignService.getCampaignById(campaignId);
     }
 }

@@ -39,7 +39,7 @@ export class CampaignService {
     }
 
     //add campaign----------------------------------------------------------------
-    async addCampaign({...campaignDto }: CampaignDto, req: any) {
+    async addCampaign({ ...campaignDto }: CampaignDto, req: any) {
         try {
             const findWorkspace = await this.workspaceModel.findById(campaignDto.workspaceId).exec();
             if (!findWorkspace) throw new NotFoundException("Workspace not found");
@@ -68,7 +68,7 @@ export class CampaignService {
     }
 
     //edit campaign---------------------------------------------------------------------------------------------
-    async editCampaign(campaignId: mongoose.Schema.Types.ObjectId, {...updateCampaign}: UpdateCampaignDto) {
+    async editCampaign(campaignId: mongoose.Schema.Types.ObjectId, { ...updateCampaign }: UpdateCampaignDto) {
         try {
             const editcampaign = await this.campaignModel.findOneAndUpdate({ _id: campaignId }, { ...updateCampaign }, { returnDocument: "after" }).exec();
             if (!editcampaign) throw new NotFoundException("campaign not found");
@@ -85,5 +85,32 @@ export class CampaignService {
         const messages = await this.campaignModel.find({ workspaceId }).exec();
         if (!messages) throw new NotFoundException('No campaigns found for this workspace');
         return messages;
+    }
+
+    //get campaigns per day----------------------------------------------------------------------------------------------------------
+    async getCampaignsPerDay(start: string, end: string) {
+        const startDate = new Date(start);
+        const endDate = new Date(end);
+        endDate.setHours(23, 59, 59, 999);
+
+        const results = await this.campaignModel.aggregate([
+            {
+                $match: { createdAt: { $gte: startDate, $lte: endDate } }
+            },
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+                    count: { $sum: 1 }
+                }
+            },
+            {
+                $sort: { _id: 1 }
+            }
+        ])
+
+        return results.map(r => ({
+            date: r._id,
+            count: r.count
+        }))
     }
 }
