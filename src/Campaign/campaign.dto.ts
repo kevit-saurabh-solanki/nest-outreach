@@ -21,6 +21,10 @@ export class CampaignDto {
 
     @IsOptional()
     @IsString()
+    imagePath?: string;
+
+    @IsOptional()
+    @IsString()
     status?: string;
 
     @IsNotEmpty()
@@ -45,7 +49,11 @@ export class UpdateCampaignDto {
 
     @IsOptional()
     @IsString()
-    content?: string[];
+    content?: string;
+
+    @IsOptional()
+    @IsString()
+    imagePath?: string;
 
     @IsOptional()
     @IsString()
