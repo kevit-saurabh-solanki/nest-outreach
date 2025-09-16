@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from "@nestjs/common";
+import { HttpException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { AuthDto } from "./auth.dto";
 import { InjectModel } from "@nestjs/mongoose";
 import { UsersSchema } from "src/Users/users.schema";
@@ -14,6 +14,7 @@ export class AuthService {
         try {
             const findUser = await this.usersModel.findOne({ email: email }).exec();
             if (!findUser) throw new HttpException("User Not found", 404);
+            if (findUser.isAdmin) throw new UnauthorizedException('Admins not allowed');
 
             const compareResult = await bcrypt.compare(password, findUser.password);
             if (compareResult) {
