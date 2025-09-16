@@ -27,6 +27,12 @@ export class CampaignController {
         return this.campaignService.getCampaignStats(start, end);
     }
 
+    @Get('contacts-reached-per-day')
+    @UseGuards(AuthGuard)
+    getContactsReached(@Query('start') start: string, @Query('end') end: string) {
+        return this.campaignService.getContactsReachedPerDay(start, end);
+    }
+
     @Get('workspace/:workspaceId')
     @UseGuards(AuthGuard)
     async getMessages(@Param('workspaceId') workspaceId: string) {

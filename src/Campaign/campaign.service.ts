@@ -222,5 +222,43 @@ export class CampaignService {
         return { labels, datasets };
     }
 
+    //get number of contacs reached------------------------------------------------------------------------------------------------------------
+    async getContactsReachedPerDay(start: string, end: string) {
+        const startDate = new Date(start);
+        const endDate = new Date(end);
+        endDate.setHours(23, 59, 59, 999);
+
+        const stats = await this.campaignModel.aggregate([
+            {
+                $match: {
+                    status: 'success',
+                    launchedAt: { $gte: startDate, $lte: endDate }
+                }
+            },
+            {
+                $group: {
+                    _id: {
+                        date: { $dateToString: { format: "%Y-%m-%d", date: "$launchedAt" } }
+                    },
+                    totalContacts: {
+                        $sum: { $size: { $ifNull: ["$launchedContacts", []] } }
+                    }
+                }
+            },
+            { $sort: { _id: 1 } }
+        ]);
+
+        return {
+            labels: stats.map(s => s._id),
+            datasets: [
+                {
+                    label: "Contacts Reached",
+                    data: stats.map(s => s.totalContacts)
+                }
+            ]
+        };
+    }
+
+
 
 }
