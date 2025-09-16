@@ -47,7 +47,7 @@ export class CampaignController {
 
     @Post(':id/launch')
     @UseGuards(AuthGuard, UserGuard)
-    async launchCampaign(@Param('campaignId') campaignId: mongoose.Schema.Types.ObjectId) {
+    async launchCampaign(@Param('id') campaignId: mongoose.Schema.Types.ObjectId) {
         return this.campaignService.launchCampaign(campaignId);
     }
 

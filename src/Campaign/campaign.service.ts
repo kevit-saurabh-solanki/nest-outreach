@@ -149,7 +149,7 @@ export class CampaignService {
 
         // ✅ snapshot message
         campaign.launchedMessage = {
-            text: campaign.content,
+            content: campaign.content,
             type: campaign.messageType,
             imagePath: campaign.messageType === 'Text and Image' ? campaign.imagePath : undefined, // 👈 only if needed
         };

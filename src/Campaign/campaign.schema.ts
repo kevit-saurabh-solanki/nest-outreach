@@ -31,15 +31,9 @@ export class CampaignSchema {
     @Prop({ required: true, ref: "UsersSchema" })
     createdBy: mongoose.Schema.Types.ObjectId;
 
-    @Prop({
-        type: {
-            text: { type: String },
-            type: { type: String, enum: ["Text", "Text and Image"] },
-            imagePath: { type: String },
-        },
-    })
+    @Prop({ type: Object, default: undefined })
     launchedMessage?: {
-        text: string;
+        content: string;
         type: string;
         imagePath?: string;
     };
