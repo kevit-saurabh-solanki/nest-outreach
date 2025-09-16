@@ -18,7 +18,13 @@ export class CampaignController {
     @Get('campaign-per-day')
     @UseGuards(AuthGuard)
     getCampaignPerDay(@Query('start') start: string, @Query('end') end: string) {
-        return this.campaignService.getCampaignsPerDay(start, end);
+        return this.campaignService.getLaunchedCampaignsPerDay(start, end);
+    }
+
+    @Get('campaign-per-message-type')
+    @UseGuards(AuthGuard)
+    getCampaignPerMessageType(@Query('start') start: string, @Query('end') end: string) {
+        return this.campaignService.getCampaignStats(start, end);
     }
 
     @Get('workspace/:workspaceId')
