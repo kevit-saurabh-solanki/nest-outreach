@@ -8,6 +8,13 @@ import mongoose from 'mongoose';
 import { CampaignDto, UpdateCampaignDto } from "./campaign.dto";
 import { ContactsSchema } from "src/Contacts/contacts.schema";
 
+interface RecentCampaign {
+    name: string;
+    targetTags: string[];
+    createdAt: Date;
+    status: string;
+}
+
 @Injectable()
 export class CampaignService {
     constructor(@InjectModel(CampaignSchema.name) private campaignModel: Model<CampaignSchema>,
@@ -107,7 +114,7 @@ export class CampaignService {
     }
 
     //get campaigns per day----------------------------------------------------------------------------------------------------------
-    async getLaunchedCampaignsPerDay(start: string, end: string) {
+    async getLaunchedCampaignsPerDay(start: string, end: string, workspaceId: string) {
         const startDate = new Date(start);
         const endDate = new Date(end);
         endDate.setHours(23, 59, 59, 999);
@@ -116,6 +123,7 @@ export class CampaignService {
             {
                 $match: {
                     status: 'success',           // only launched campaigns
+                    workspaceId: new mongoose.Types.ObjectId(workspaceId),
                     launchedAt: { $gte: startDate, $lte: endDate }
                 }
             },
@@ -171,7 +179,7 @@ export class CampaignService {
     }
 
     //get campaigns per message type-----------------------------------------------------------------------
-    async getCampaignStats(start: string, end: string) {
+    async getCampaignStats(start: string, end: string, workspaceId: string) {
         const startDate = new Date(start);
         const endDate = new Date(end);
         endDate.setHours(23, 59, 59, 999);
@@ -181,6 +189,7 @@ export class CampaignService {
             {
                 $match: {
                     status: 'success',
+                    workspaceId: new mongoose.Types.ObjectId(workspaceId),
                     launchedAt: { $gte: startDate, $lte: endDate }
                 }
             },
@@ -223,7 +232,7 @@ export class CampaignService {
     }
 
     //get number of contacs reached------------------------------------------------------------------------------------------------------------
-    async getContactsReachedPerDay(start: string, end: string) {
+    async getContactsReachedPerDay(start: string, end: string, workspaceId: string) {
         const startDate = new Date(start);
         const endDate = new Date(end);
         endDate.setHours(23, 59, 59, 999);
@@ -232,17 +241,14 @@ export class CampaignService {
             {
                 $match: {
                     status: 'success',
+                    workspaceId: new mongoose.Types.ObjectId(workspaceId),
                     launchedAt: { $gte: startDate, $lte: endDate }
                 }
             },
             {
                 $group: {
-                    _id: {
-                        date: { $dateToString: { format: "%Y-%m-%d", date: "$launchedAt" } }
-                    },
-                    totalContacts: {
-                        $sum: { $size: { $ifNull: ["$launchedContacts", []] } }
-                    }
+                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$launchedAt" } },
+                    totalContacts: { $sum: { $size: { $ifNull: ["$launchedContacts", []] } } }
                 }
             },
             { $sort: { _id: 1 } }
@@ -259,6 +265,15 @@ export class CampaignService {
         };
     }
 
+    //get recent 5 campaigns--------------------------------------------------------------------------------------------------------------------
+    async getRecentCampaigns(workspaceId: string) {
+        const campaigns = await this.campaignModel.find({ workspaceId })
+            .sort({ createdAt: -1 }) // 👈 newest first
+            .limit(5)                // 👈 only top 5
+            .select("name targetTags createdAt status") // 👈 return only useful fields
+            .exec();
 
+        return campaigns;
+    }
 
 }
