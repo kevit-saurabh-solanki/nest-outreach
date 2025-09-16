@@ -8,6 +8,13 @@ import mongoose from 'mongoose';
 import { CampaignDto, UpdateCampaignDto } from "./campaign.dto";
 import { ContactsSchema } from "src/Contacts/contacts.schema";
 
+interface RecentCampaign {
+    name: string;
+    targetTags: string[];
+    createdAt: Date;
+    status: string;
+}
+
 @Injectable()
 export class CampaignService {
     constructor(@InjectModel(CampaignSchema.name) private campaignModel: Model<CampaignSchema>,
@@ -101,36 +108,40 @@ export class CampaignService {
 
     //get campaign by workspaceId--------------------------------------------------------------------------------------------------------
     async getCampaignByWorkspace(workspaceId: string) {
-        const messages = await this.campaignModel.find({ workspaceId }).exec();
-        if (!messages) throw new NotFoundException('No campaigns found for this workspace');
-        return messages;
+        const campaigns = await this.campaignModel.find({ workspaceId }).exec();
+        if (!campaigns) throw new NotFoundException('No campaigns found for this workspace');
+        return campaigns;
     }
 
     //get campaigns per day----------------------------------------------------------------------------------------------------------
-    async getCampaignsPerDay(start: string, end: string) {
+    async getLaunchedCampaignsPerDay(start: string, end: string, workspaceId: string) {
         const startDate = new Date(start);
         const endDate = new Date(end);
         endDate.setHours(23, 59, 59, 999);
 
         const results = await this.campaignModel.aggregate([
             {
-                $match: { createdAt: { $gte: startDate, $lte: endDate } }
+                $match: {
+                    status: 'success',           // only launched campaigns
+                    workspaceId: new mongoose.Types.ObjectId(workspaceId),
+                    launchedAt: { $gte: startDate, $lte: endDate }
+                }
             },
             {
                 $group: {
-                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$launchedAt" } },
                     count: { $sum: 1 }
                 }
             },
             {
                 $sort: { _id: 1 }
             }
-        ])
+        ]);
 
         return results.map(r => ({
             date: r._id,
             count: r.count
-        }))
+        }));
     }
 
     //launch campaign------------------------------------------------------------------------------------------------------------------
@@ -166,4 +177,103 @@ export class CampaignService {
 
         return campaign.save();
     }
+
+    //get campaigns per message type-----------------------------------------------------------------------
+    async getCampaignStats(start: string, end: string, workspaceId: string) {
+        const startDate = new Date(start);
+        const endDate = new Date(end);
+        endDate.setHours(23, 59, 59, 999);
+
+        // aggregate campaigns
+        const stats = await this.campaignModel.aggregate([
+            {
+                $match: {
+                    status: 'success',
+                    workspaceId: new mongoose.Types.ObjectId(workspaceId),
+                    launchedAt: { $gte: startDate, $lte: endDate }
+                }
+            },
+            {
+                $group: {
+                    _id: {
+                        date: { $dateToString: { format: "%Y-%m-%d", date: "$launchedAt" } },
+                        messageType: "$messageType"
+                    },
+                    count: { $sum: { $size: { $ifNull: ["$launchedContacts", []] } } } // count messages = launchedContacts length
+                }
+            },
+            {
+                $group: {
+                    _id: "$_id.date",
+                    counts: {
+                        $push: {
+                            messageType: "$_id.messageType",
+                            count: "$count"
+                        }
+                    }
+                }
+            },
+            { $sort: { _id: 1 } }
+        ]);
+
+        // ✅ Format result for Chart.js
+        const labels: string[] = stats.map(s => s._id);
+
+        const messageTypes = ["Text", "Text and Image"]; // known types
+        const datasets = messageTypes.map(type => ({
+            label: type,
+            data: stats.map(s => {
+                const found = s.counts.find((c: any) => c.messageType === type);
+                return found ? found.count : 0;
+            })
+        }));
+
+        return { labels, datasets };
+    }
+
+    //get number of contacs reached------------------------------------------------------------------------------------------------------------
+    async getContactsReachedPerDay(start: string, end: string, workspaceId: string) {
+        const startDate = new Date(start);
+        const endDate = new Date(end);
+        endDate.setHours(23, 59, 59, 999);
+
+        const stats = await this.campaignModel.aggregate([
+            {
+                $match: {
+                    status: 'success',
+                    workspaceId: new mongoose.Types.ObjectId(workspaceId),
+                    launchedAt: { $gte: startDate, $lte: endDate }
+                }
+            },
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$launchedAt" } },
+                    totalContacts: { $sum: { $size: { $ifNull: ["$launchedContacts", []] } } }
+                }
+            },
+            { $sort: { _id: 1 } }
+        ]);
+
+        return {
+            labels: stats.map(s => s._id),
+            datasets: [
+                {
+                    label: "Contacts Reached",
+                    data: stats.map(s => s.totalContacts)
+                }
+            ]
+        };
+    }
+
+    //get recent 5 campaigns--------------------------------------------------------------------------------------------------------------------
+    async getRecentCampaigns(workspaceId: string) {
+        const campaigns = await this.campaignModel.find({ workspaceId })
+            .sort({ createdAt: -1 }) // 👈 newest first
+            .limit(5)                // 👈 only top 5
+            .select("name targetTags createdAt status") // 👈 return only useful fields
+            .exec();
+
+        return campaigns;
+    }
+
 }

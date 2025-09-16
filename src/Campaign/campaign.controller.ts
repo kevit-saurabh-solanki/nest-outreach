@@ -17,8 +17,26 @@ export class CampaignController {
 
     @Get('campaign-per-day')
     @UseGuards(AuthGuard)
-    getCampaignPerDay(@Query('start') start: string, @Query('end') end: string) {
-        return this.campaignService.getCampaignsPerDay(start, end);
+    getCampaignPerDay(@Query('start') start: string, @Query('end') end: string, @Query('workspaceId') workspaceId: string) {
+        return this.campaignService.getLaunchedCampaignsPerDay(start, end, workspaceId);
+    }
+
+    @Get('campaign-per-message-type')
+    @UseGuards(AuthGuard)
+    getCampaignPerMessageType(@Query('start') start: string, @Query('end') end: string, @Query('workspaceId') workspaceId: string) {
+        return this.campaignService.getCampaignStats(start, end, workspaceId);
+    }
+
+    @Get('contacts-reached-per-day')
+    @UseGuards(AuthGuard)
+    getContactsReached(@Query('start') start: string, @Query('end') end: string, @Query('workspaceId') workspaceId: string) {
+        return this.campaignService.getContactsReachedPerDay(start, end, workspaceId);
+    }
+
+    @Get('recent-campaigns')
+    @UseGuards(AuthGuard)
+    getRecentCampaigns(@Query('workspaceId') workspaceId: string) {
+        return this.campaignService.getRecentCampaigns(workspaceId)
     }
 
     @Get('workspace/:workspaceId')
