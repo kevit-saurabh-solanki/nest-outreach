@@ -31,23 +31,6 @@ export class CampaignDto {
     @IsString()
     workspaceId: string;
 
-    @IsOptional()
-    launchedMessage?: {
-        text: string;
-        type: 'Text' | 'Text and Image';
-        imagePath?: string;
-    };
-
-    @IsOptional()
-    launchedContacts?: {
-        _id: string;
-        name: string;
-        phone: string;
-    }[];
-
-    @IsOptional()
-    launchedAt?: Date;
-
 }
 
 export class UpdateCampaignDto {
@@ -67,6 +50,10 @@ export class UpdateCampaignDto {
     @IsOptional()
     @IsString()
     content?: string;
+
+    @IsOptional()
+    @IsString()
+    messageType?: string;
 
     @IsOptional()
     @IsString()

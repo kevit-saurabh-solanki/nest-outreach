@@ -45,6 +45,13 @@ export class CampaignController {
         return this.campaignService.editCampaign(campaignId, updateCampaignDto);
     }
 
+    @Post(':id/launch')
+    @UseGuards(AuthGuard, UserGuard)
+    async launchCampaign(@Param('campaignId') campaignId: mongoose.Schema.Types.ObjectId) {
+        return this.campaignService.launchCampaign(campaignId);
+    }
+
+
     @Get(':campaignId')
     @UseGuards(AuthGuard)
     getCampaignById(@Param('campaignId') campaignId: mongoose.Schema.Types.ObjectId) {

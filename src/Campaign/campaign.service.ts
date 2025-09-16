@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { CampaignSchema } from "./campaign.schema";
 import { Model } from "mongoose";
@@ -6,12 +6,14 @@ import { UsersSchema } from "src/Users/users.schema";
 import { WorkspaceSchema } from "src/Workspace/workspace.schema";
 import mongoose from 'mongoose';
 import { CampaignDto, UpdateCampaignDto } from "./campaign.dto";
+import { ContactsSchema } from "src/Contacts/contacts.schema";
 
 @Injectable()
 export class CampaignService {
     constructor(@InjectModel(CampaignSchema.name) private campaignModel: Model<CampaignSchema>,
         @InjectModel(UsersSchema.name) private userModel: Model<UsersSchema>,
-        @InjectModel(WorkspaceSchema.name) private workspaceModel: Model<WorkspaceSchema>) { }
+        @InjectModel(WorkspaceSchema.name) private workspaceModel: Model<WorkspaceSchema>,
+        @InjectModel(ContactsSchema.name) private contactsModel: Model<ContactsSchema>) { }
 
     //get all campaign--------------------------------------------------------
     async getAllCampaign() {
@@ -68,15 +70,32 @@ export class CampaignService {
     }
 
     //edit campaign---------------------------------------------------------------------------------------------
-    async editCampaign(campaignId: mongoose.Schema.Types.ObjectId, { ...updateCampaign }: UpdateCampaignDto) {
+    async editCampaign(campaignId: mongoose.Schema.Types.ObjectId, { messageType, imagePath, ...updateCampaign }: UpdateCampaignDto) {
         try {
-            const editcampaign = await this.campaignModel.findOneAndUpdate({ _id: campaignId }, { ...updateCampaign }, { returnDocument: "after" }).exec();
-            if (!editcampaign) throw new NotFoundException("campaign not found");
-            return editcampaign;
-        }
-        catch (err) {
+            const findCampaign = await this.campaignModel.findById(campaignId);
+            if (!findCampaign) throw new NotFoundException('campaign not found');
+            if (findCampaign.status === 'success') throw new BadRequestException('Launched Campaign Cannot be edited');
+
+            const editCampaign = await this.campaignModel.findOneAndUpdate(
+                { _id: campaignId },
+                messageType === 'Text'
+                    ? {
+                        ...updateCampaign,
+                        messageType,
+                        $unset: { imagePath: 1 },   // 👈 directly unset
+                    }
+                    : {
+                        ...updateCampaign,
+                        messageType,
+                        ...(imagePath && { imagePath }), // only set if provided
+                    },
+                { new: true }
+            );
+            if (!editCampaign) throw new NotFoundException('campaign not found');
+            return editCampaign;
+        } catch (err) {
             console.log(err);
-            return err;
+            throw err;
         }
     }
 
@@ -112,5 +131,39 @@ export class CampaignService {
             date: r._id,
             count: r.count
         }))
+    }
+
+    //launch campaign------------------------------------------------------------------------------------------------------------------
+    async launchCampaign(campaignId: mongoose.Schema.Types.ObjectId) {
+        const campaign = await this.campaignModel.findById(campaignId);
+        if (!campaign) throw new NotFoundException('Campaign Not Found');
+
+        if (campaign.status !== 'draft') {
+            throw new BadRequestException('Only draft campaigns can be launched');
+        }
+
+        const contacts = await this.contactsModel.find({
+            tags: { $in: campaign.targetTags },
+            workspaceId: campaign.workspaceId,
+        }).lean();
+
+        // ✅ snapshot message
+        campaign.launchedMessage = {
+            text: campaign.content,
+            type: campaign.messageType,
+            imagePath: campaign.messageType === 'Text and Image' ? campaign.imagePath : undefined, // 👈 only if needed
+        };
+
+        // ✅ snapshot contacts
+        campaign.launchedContacts = contacts.map((c) => ({
+            _id: c._id.toString(),
+            name: c.name,
+            phoneNumber: c.phoneNumber,
+        }));
+
+        campaign.launchedAt = new Date();
+        campaign.status = 'success';
+
+        return campaign.save();
     }
 }

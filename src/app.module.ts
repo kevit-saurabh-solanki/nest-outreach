@@ -7,7 +7,6 @@ import { ContactsModule } from './Contacts/contacts.module';
 import { MessageModule } from './Message/message.module';
 import { ConfigModule } from '@nestjs/config';
 import { CampaignModule } from './Campaign/campaign.module';
-import { CampaignMessageModule } from './Campaign_Message/campMessage.module';
 
 @Module({
   imports: [
@@ -21,7 +20,6 @@ import { CampaignMessageModule } from './Campaign_Message/campMessage.module';
     ContactsModule,
     MessageModule,
     CampaignModule,
-    CampaignMessageModule,
     MongooseModule.forRoot(`mongodb+srv://saurabhsolanki:${process.env.MONGO_PASS}@cluster0.x0iofqd.mongodb.net/nestOutreach?retryWrites=true&w=majority&appName=Cluster0`)
   ],
   controllers: [],

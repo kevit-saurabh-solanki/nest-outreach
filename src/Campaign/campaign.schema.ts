@@ -44,11 +44,11 @@ export class CampaignSchema {
         imagePath?: string;
     };
 
-    @Prop({ type: [Object] })
+    @Prop({ type: [Object], default: undefined })
     launchedContacts?: {
         _id: string;
         name: string;
-        phoneNumber: string;
+        phoneNumber: number;
     }[];
 
     @Prop()
