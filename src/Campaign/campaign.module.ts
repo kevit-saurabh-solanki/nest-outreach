@@ -7,6 +7,7 @@ import { UsersSchema, usersSchema } from "src/Users/users.schema";
 import { WorkspaceSchema, workspaceSchema } from "src/Workspace/workspace.schema";
 import { AuthModule } from "src/Auth/auth.module";
 import { contactsSchema, ContactsSchema } from "src/Contacts/contacts.schema";
+import { messageSchema, MessageSchema } from "src/Message/message.schema";
 
 @Module({
     imports: [MongooseModule.forFeature([
@@ -25,6 +26,10 @@ import { contactsSchema, ContactsSchema } from "src/Contacts/contacts.schema";
         {
             name: ContactsSchema.name,
             schema: contactsSchema
+        },
+        {
+            name: MessageSchema.name,
+            schema: messageSchema
         }
     ]),
         AuthModule],
