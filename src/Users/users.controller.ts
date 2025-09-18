@@ -1,7 +1,7 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Req, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, Req, UseGuards } from "@nestjs/common";
 import { UsersService } from "./users.service";
 import { updateUserDto, UsersDto } from "./users.dto";
-import mongoose from "mongoose";
+import mongoose, { mongo } from "mongoose";
 import { AuthGuard } from "src/Auth/auth.guard";
 import { AdminGuard } from "src/Auth/admin.guard";
 
@@ -21,6 +21,12 @@ export class UsersControl {
         return this.usersService.getAllUsers();
     }
 
+    @Get('workspace/:workspaceId')
+    @UseGuards(AuthGuard, AdminGuard)
+    getUsersByWorkspaceId(@Param('workspaceId') workspaceId: string) {
+        return this.usersService.getUsersByWorkspaceId(workspaceId);
+    }
+
     @Get('/:userId')
     @UseGuards(AuthGuard)
     getUserById(@Param('userId') userId: mongoose.Schema.Types.ObjectId) {
@@ -29,8 +35,8 @@ export class UsersControl {
 
     @Delete('/:userId')
     @UseGuards(AuthGuard, AdminGuard)
-    deleteUserById(@Param('userId') userId: mongoose.Schema.Types.ObjectId) {
-        return this.usersService.deleteUser(userId);
+    deleteUserById(@Param('userId') userId: mongoose.Types.ObjectId, @Query('workspaceId') workspaceId: mongoose.Types.ObjectId) {
+        return this.usersService.deleteUser(userId, workspaceId);
     }
 
     @Put('/:userId')

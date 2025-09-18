@@ -2,7 +2,6 @@ import { IsArray, IsNotEmpty, IsOptional, IsString } from "class-validator";
 import mongoose from "mongoose";
 
 export class CampaignDto {
-
     @IsNotEmpty()
     @IsString()
     name: string;
@@ -13,54 +12,38 @@ export class CampaignDto {
 
     @IsNotEmpty()
     @IsArray()
+    @IsString({ each: true })
     targetTags: string[];
-
-    @IsNotEmpty()
-    @IsString()
-    content: string;
-
-    @IsNotEmpty()
-    @IsString()
-    messageType: string;
 
     @IsOptional()
     @IsString()
-    imagePath?: string;
+    description?: string;
 
     @IsNotEmpty()
     @IsString()
     workspaceId: string;
-
 }
 
-export class UpdateCampaignDto {
 
+export class UpdateCampaignDto {
     @IsOptional()
     @IsString()
     name?: string;
 
     @IsOptional()
     @IsString()
-    message?: string;
+    messageId?: string;
 
     @IsOptional()
     @IsArray()
+    @IsString({ each: true })
     targetTags?: string[];
 
     @IsOptional()
     @IsString()
-    content?: string;
-
-    @IsOptional()
-    @IsString()
-    messageType?: string;
-
-    @IsOptional()
-    @IsString()
-    imagePath?: string;
+    description?: string;
 
     @IsOptional()
     @IsString()
     workspaceId?: string;
-
 }

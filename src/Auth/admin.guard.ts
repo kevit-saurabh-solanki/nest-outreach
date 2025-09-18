@@ -8,7 +8,7 @@ export class AdminGuard implements CanActivate {
 
   constructor(@InjectModel(UsersSchema.name) private usersModel: Model<UsersSchema>) { }
 
-  async canActivate(context: ExecutionContext,): Promise<boolean> {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
 
     try {
       const req = context.switchToHttp().getRequest();

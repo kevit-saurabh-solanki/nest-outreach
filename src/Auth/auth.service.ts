@@ -18,9 +18,31 @@ export class AuthService {
 
             const compareResult = await bcrypt.compare(password, findUser.password);
             if (compareResult) {
-                const payload = { _id:findUser._id, email: findUser.email };
+                const payload = { _id: findUser._id, email: findUser.email };
                 const token = this.jwtService.sign(payload, { secret: process.env.JWT_KEY });
-                return {token: token};
+                return { token: token };
+            }
+            else {
+                throw new HttpException("Unauthorized Access", 401);
+            }
+
+        }
+        catch (err) {
+            console.log(err);
+        }
+    }
+
+    async loginAdmin({ email, password }: AuthDto) {
+        try {
+            const findUser = await this.usersModel.findOne({ email: email }).exec();
+            if (!findUser) throw new HttpException("Admin Not found", 404);
+            if (!findUser.isAdmin) throw new UnauthorizedException('Users not allowed');
+
+            const compareResult = await bcrypt.compare(password, findUser.password);
+            if (compareResult) {
+                const payload = { _id: findUser._id, email: findUser.email };
+                const token = this.jwtService.sign(payload, { secret: process.env.JWT_KEY });
+                return { token: token };
             }
             else {
                 throw new HttpException("Unauthorized Access", 401);

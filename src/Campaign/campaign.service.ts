@@ -7,6 +7,7 @@ import { WorkspaceSchema } from "src/Workspace/workspace.schema";
 import mongoose from 'mongoose';
 import { CampaignDto, UpdateCampaignDto } from "./campaign.dto";
 import { ContactsSchema } from "src/Contacts/contacts.schema";
+import { MessageSchema } from "src/Message/message.schema";
 
 interface RecentCampaign {
     name: string;
@@ -20,7 +21,8 @@ export class CampaignService {
     constructor(@InjectModel(CampaignSchema.name) private campaignModel: Model<CampaignSchema>,
         @InjectModel(UsersSchema.name) private userModel: Model<UsersSchema>,
         @InjectModel(WorkspaceSchema.name) private workspaceModel: Model<WorkspaceSchema>,
-        @InjectModel(ContactsSchema.name) private contactsModel: Model<ContactsSchema>) { }
+        @InjectModel(ContactsSchema.name) private contactsModel: Model<ContactsSchema>,
+        @InjectModel(MessageSchema.name) private messageModel: Model<MessageSchema>) { }
 
     //get all campaign--------------------------------------------------------
     async getAllCampaign() {
@@ -77,7 +79,7 @@ export class CampaignService {
     }
 
     //edit campaign---------------------------------------------------------------------------------------------
-    async editCampaign(campaignId: mongoose.Schema.Types.ObjectId, { messageType, imagePath, ...updateCampaign }: UpdateCampaignDto) {
+    async editCampaign(campaignId: mongoose.Schema.Types.ObjectId, { ...updateCampaign }: UpdateCampaignDto) {
         try {
             const findCampaign = await this.campaignModel.findById(campaignId);
             if (!findCampaign) throw new NotFoundException('campaign not found');
@@ -85,17 +87,7 @@ export class CampaignService {
 
             const editCampaign = await this.campaignModel.findOneAndUpdate(
                 { _id: campaignId },
-                messageType === 'Text'
-                    ? {
-                        ...updateCampaign,
-                        messageType,
-                        $unset: { imagePath: 1 },   // 👈 directly unset
-                    }
-                    : {
-                        ...updateCampaign,
-                        messageType,
-                        ...(imagePath && { imagePath }), // only set if provided
-                    },
+                { ...updateCampaign },
                 { new: true }
             );
             if (!editCampaign) throw new NotFoundException('campaign not found');
@@ -144,8 +136,9 @@ export class CampaignService {
         }));
     }
 
-    //launch campaign------------------------------------------------------------------------------------------------------------------
+    // launch campaign------------------------------------------------------------------------------------------------------------------
     async launchCampaign(campaignId: mongoose.Schema.Types.ObjectId) {
+        // 1. Find campaign
         const campaign = await this.campaignModel.findById(campaignId);
         if (!campaign) throw new NotFoundException('Campaign Not Found');
 
@@ -153,30 +146,40 @@ export class CampaignService {
             throw new BadRequestException('Only draft campaigns can be launched');
         }
 
+        // 2. Find message template
+        const message = await this.messageModel.findById(campaign.messageId).lean();
+        if (!message) {
+            throw new NotFoundException('Message template not found for this campaign');
+        }
+
+        // 3. Fetch contacts matching campaign target tags
         const contacts = await this.contactsModel.find({
             tags: { $in: campaign.targetTags },
             workspaceId: campaign.workspaceId,
         }).lean();
 
-        // ✅ snapshot message
+        // 4. Snapshot message into campaign
         campaign.launchedMessage = {
-            content: campaign.content,
-            type: campaign.messageType,
-            imagePath: campaign.messageType === 'Text and Image' ? campaign.imagePath : undefined, // 👈 only if needed
+            content: message.content,
+            type: message.messageType,
+            imagePath: message.messageType === 'Text and Image' ? message.imagePath : undefined,
         };
 
-        // ✅ snapshot contacts
+        // 5. Snapshot contacts
         campaign.launchedContacts = contacts.map((c) => ({
             _id: c._id.toString(),
             name: c.name,
             phoneNumber: c.phoneNumber,
         }));
 
+        // 6. Update status & timestamp
         campaign.launchedAt = new Date();
         campaign.status = 'success';
 
+        // 7. Save and return
         return campaign.save();
     }
+
 
     //get campaigns per message type-----------------------------------------------------------------------
     async getCampaignStats(start: string, end: string, workspaceId: string) {
@@ -184,7 +187,6 @@ export class CampaignService {
         const endDate = new Date(end);
         endDate.setHours(23, 59, 59, 999);
 
-        // aggregate campaigns
         const stats = await this.campaignModel.aggregate([
             {
                 $match: {
@@ -193,13 +195,23 @@ export class CampaignService {
                     launchedAt: { $gte: startDate, $lte: endDate }
                 }
             },
+            // 🔍 join with Message collection to get messageType
+            {
+                $lookup: {
+                    from: "messageschemas", // collection name for MessageSchema
+                    localField: "messageId",
+                    foreignField: "_id",
+                    as: "message"
+                }
+            },
+            { $unwind: "$message" }, // flatten message array
             {
                 $group: {
                     _id: {
                         date: { $dateToString: { format: "%Y-%m-%d", date: "$launchedAt" } },
-                        messageType: "$messageType"
+                        messageType: "$message.messageType"
                     },
-                    count: { $sum: { $size: { $ifNull: ["$launchedContacts", []] } } } // count messages = launchedContacts length
+                    count: { $sum: { $size: { $ifNull: ["$launchedContacts", []] } } }
                 }
             },
             {
@@ -230,6 +242,7 @@ export class CampaignService {
 
         return { labels, datasets };
     }
+
 
     //get number of contacs reached------------------------------------------------------------------------------------------------------------
     async getContactsReachedPerDay(start: string, end: string, workspaceId: string) {
