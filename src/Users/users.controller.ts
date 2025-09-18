@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Req, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, Req, UseGuards } from "@nestjs/common";
 import { UsersService } from "./users.service";
 import { updateUserDto, UsersDto } from "./users.dto";
 import mongoose, { mongo } from "mongoose";
@@ -35,8 +35,8 @@ export class UsersControl {
 
     @Delete('/:userId')
     @UseGuards(AuthGuard, AdminGuard)
-    deleteUserById(@Param('userId') userId: mongoose.Schema.Types.ObjectId) {
-        return this.usersService.deleteUser(userId);
+    deleteUserById(@Param('userId') userId: mongoose.Types.ObjectId, @Query('workspaceId') workspaceId: mongoose.Types.ObjectId) {
+        return this.usersService.deleteUser(userId, workspaceId);
     }
 
     @Put('/:userId')

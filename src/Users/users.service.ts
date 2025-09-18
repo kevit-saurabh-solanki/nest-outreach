@@ -67,17 +67,25 @@ export class UsersService {
     }
 
     //delete a user-----------------------------------------------------------------
-    async deleteUser(userId: mongoose.Schema.Types.ObjectId) {
-        try {
-            const deletedUser = await this.usersModel.findOneAndDelete({ _id: userId }, { returnDocument: "after" }).exec()
-            if (!deletedUser) throw new NotFoundException("User not found");
-            return deletedUser;
+    async deleteUser(userId: mongoose.Types.ObjectId, workspaceId: mongoose.Types.ObjectId) {
+        const user = await this.usersModel.findById(userId).exec();
+        if (!user) throw new NotFoundException("User not found");
+
+        if (user.workspaceId) {
+            user.workspaceId = user.workspaceId.filter(
+                id => id.toString() !== workspaceId.toString()
+            );
+
+            if (user.workspaceId.length === 0) {
+                await this.usersModel.findByIdAndDelete(userId).exec();
+                return { message: "User deleted completely" };
+            }
         }
-        catch (err) {
-            console.log(err);
-            return err; //500
-        }
+
+        await user.save();
+        return { message: "User removed from workspace", user };
     }
+
 
     //edit a user---------------------------------------------------------------------
     async editUser(userId: mongoose.Schema.Types.ObjectId, { password, workspaceId, ...updateUserDto }: updateUserDto) {
@@ -88,15 +96,6 @@ export class UsersService {
                 await this.usersModel.findOneAndUpdate(
                     { _id: userId },
                     { password: editHashedPass },
-                    { returnDocument: 'after' }
-                ).exec();
-            }
-
-            // If workspaceId is provided, push it into array
-            if (workspaceId) {
-                await this.usersModel.findOneAndUpdate(
-                    { _id: userId },
-                    { $push: { workspaceId: workspaceId } },
                     { returnDocument: 'after' }
                 ).exec();
             }
@@ -117,7 +116,7 @@ export class UsersService {
         }
     }
 
-    async getUsersByWorkspaceId(workspaceId:string) {
+    async getUsersByWorkspaceId(workspaceId: string) {
         const users = await this.usersModel.find({ workspaceId: { $in: [workspaceId] } }, { password: 0, updatedAt: 0, createdAt: 0 }).exec();
         return users;
     }
