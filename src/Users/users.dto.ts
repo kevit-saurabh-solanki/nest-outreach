@@ -1,4 +1,5 @@
 import { IsEmail, IsNotEmpty, IsString, IsOptional, IsBoolean, IsArray } from "class-validator";
+import mongoose from "mongoose";
 
 
 export class UsersDto {
@@ -20,7 +21,7 @@ export class UsersDto {
     isAdmin?: boolean;
 
     @IsOptional()
-    workspaceId?: string[];
+    workspaceId: mongoose.Schema.Types.ObjectId;
 
 }
 
@@ -39,6 +40,6 @@ export class updateUserDto {
     role?: string;
 
     @IsOptional()
-    workspaceId?: string[];
+    workspaceId?: string;
     
 }

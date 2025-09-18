@@ -1,7 +1,7 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { UsersSchema } from "./users.schema";
-import mongoose, { Model } from "mongoose";
+import mongoose, { Model, Types } from "mongoose";
 import { updateUserDto, UsersDto } from "./users.dto";
 import * as bcrypt from "bcrypt";
 import { WorkspaceSchema } from "src/Workspace/workspace.schema";
@@ -11,13 +11,29 @@ export class UsersService {
     constructor(@InjectModel(UsersSchema.name) private usersModel: Model<UsersSchema>, @InjectModel(WorkspaceSchema.name) private workspaceModel: Model<WorkspaceSchema>) { }
 
     //Add users-----------------------------------------------------------------------
-    async addUser({ password, ...userData }: UsersDto) {
+    async addUser({ email, password, workspaceId, ...userData }: UsersDto) {
         try {
-            // const foundWorkspace = await this.workspaceModel.findById(userData.workspaceId).exec();
-            // if (!foundWorkspace) throw new NotFoundException("workspace not found");
+            const existingUser = await this.usersModel.findOne({ email: email }).exec();
+
+            if (existingUser && existingUser.workspaceId) {
+                if (existingUser.workspaceId.includes(workspaceId)) {
+                    throw new ConflictException('User already exist in the workspace');
+                }
+
+                existingUser.workspaceId.push(workspaceId);
+                return await existingUser.save();
+            }
+
+            // 4. If user does not exist at all → create new one
             const hashedPass = await bcrypt.hash(password, 10);
-            const newUser = new this.usersModel({ password: hashedPass, ...userData });
-            return newUser.save();
+            const newUser = new this.usersModel({
+                email,
+                password: hashedPass,
+                workspaceId: [workspaceId], // wrap in array since schema is array
+                ...userData,
+            });
+
+            return await newUser.save();
         }
         catch (err) {
             console.log(err);
@@ -99,6 +115,11 @@ export class UsersService {
             console.log(err);
             throw err;
         }
+    }
+
+    async getUsersByWorkspaceId(workspaceId:string) {
+        const users = await this.usersModel.find({ workspaceId: { $in: [workspaceId] } }, { password: 0, updatedAt: 0, createdAt: 0 }).exec();
+        return users;
     }
 
 }

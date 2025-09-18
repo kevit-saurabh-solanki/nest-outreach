@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, Req, UseGuards } from "@nestjs/common";
 import { UsersService } from "./users.service";
 import { updateUserDto, UsersDto } from "./users.dto";
-import mongoose from "mongoose";
+import mongoose, { mongo } from "mongoose";
 import { AuthGuard } from "src/Auth/auth.guard";
 import { AdminGuard } from "src/Auth/admin.guard";
 
@@ -19,6 +19,12 @@ export class UsersControl {
     @UseGuards(AuthGuard, AdminGuard)
     getUser() {
         return this.usersService.getAllUsers();
+    }
+
+    @Get('workspace/:workspaceId')
+    @UseGuards(AuthGuard, AdminGuard)
+    getUsersByWorkspaceId(@Param('workspaceId') workspaceId: string) {
+        return this.usersService.getUsersByWorkspaceId(workspaceId);
     }
 
     @Get('/:userId')
