@@ -23,8 +23,8 @@ export class UsersControl {
 
     @Get('workspace/:workspaceId')
     @UseGuards(AuthGuard, AdminGuard)
-    getUsersByWorkspaceId(@Param('workspaceId') workspaceId: string) {
-        return this.usersService.getUsersByWorkspaceId(workspaceId);
+    getUsersByWorkspaceId(@Param('workspaceId') workspaceId: string, @Query('page') page: number, @Query('limit') limit: number) {
+        return this.usersService.getUsersByWorkspaceId(workspaceId, page, limit);
     }
 
     @Get('/:userId')
