@@ -51,6 +51,12 @@ export class CampaignController {
         return this.campaignService.addCampaign(campaignDto, req);
     }
 
+    @Post('copy/:campaignId')
+    @UseGuards(AuthGuard, UserGuard)
+    copyCampaign(@Param('campaignId') campaignId: string, @Req() req: any) {
+        return this.campaignService.copyCampaign(campaignId, req);
+    }
+
     @Delete(':campaignId')
     @UseGuards(AuthGuard, UserGuard)
     deleteCampaign(@Param('campaignId') campaignId: mongoose.Schema.Types.ObjectId) {

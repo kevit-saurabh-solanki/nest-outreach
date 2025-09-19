@@ -308,4 +308,23 @@ export class CampaignService {
         return campaigns;
     }
 
+    //copy a campaign------------------------------------------------------------------------
+    async copyCampaign(campaignId: string, req: any) {
+        const campaign = await this.campaignModel.findById(campaignId).exec();
+        if (!campaign) throw new NotFoundException("Campaign not found");
+
+        if (campaign.status === "success") throw new BadRequestException("Launched campaign cannot be copied");
+
+        const newCampaign = new this.campaignModel({
+            createdBy: req.users._id,
+            name: campaign.name,
+            description: campaign.description,
+            messageId: campaign.messageId,
+            targetTags: campaign.targetTags,
+            workspaceId: campaign.workspaceId,
+            status: campaign.status
+        })
+
+        return newCampaign.save();
+    }
 }
