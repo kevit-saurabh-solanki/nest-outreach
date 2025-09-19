@@ -1,4 +1,4 @@
-import { Controller, UseGuards, Get, Post, Req, Param, Body, Put, Delete } from "@nestjs/common";
+import { Controller, UseGuards, Get, Post, Req, Param, Body, Put, Delete, Query } from "@nestjs/common";
 import { ContactsService } from "./contacts.service";
 import { AuthGuard } from "src/Auth/auth.guard";
 import mongoose from "mongoose";
@@ -23,8 +23,8 @@ export class ContactsControl {
 
     @Get('workspace/:workspaceId')
     @UseGuards(AuthGuard)
-    async getContacts(@Param('workspaceId') workspaceId: string) {
-        return this.contactService.getContactsByWorkspace(workspaceId);
+    async getContacts(@Param('workspaceId') workspaceId: string, @Query('page') page: number, @Query('limit') limit: number) {
+        return this.contactService.getContactsByWorkspace(workspaceId, page, limit);
     }
 
     @Post()

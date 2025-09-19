@@ -79,9 +79,22 @@ export class ContactsService {
     }
 
     //get contact by workspace id------------------------------------------
-    async getContactsByWorkspace(workspaceId: string) {
-        const contacts = await this.contactModel.find({ workspaceId }).exec();
-        if (!contacts) throw new NotFoundException('No contacts found for this workspace');
-        return contacts;
+    async getContactsByWorkspace(workspaceId: string, page: number = 1, limit: number = 10) {
+        const skip = (page - 1) * limit;
+
+        const contacts = await this.contactModel
+            .find({ workspaceId }) // filter contacts of this workspace
+            .skip(skip)
+            .limit(limit)
+            .exec();
+
+        const total = await this.contactModel.countDocuments({ workspaceId });
+
+        return {
+            data: contacts,
+            total,
+            page,
+            totalPages: Math.ceil(total / limit),
+        };
     }
 }
