@@ -116,9 +116,23 @@ export class UsersService {
         }
     }
 
-    async getUsersByWorkspaceId(workspaceId: string) {
-        const users = await this.usersModel.find({ workspaceId: { $in: [workspaceId] } }, { password: 0, updatedAt: 0, createdAt: 0 }).exec();
-        return users;
+    async getUsersByWorkspaceId(workspaceId: string, page: number = 1, limit: number = 10) {
+        const skip = (page - 1) * limit;
+
+        const users = await this.usersModel
+            .find({ workspaceId: { $in: [workspaceId] } })
+            .skip(skip)
+            .limit(limit)
+            .exec();
+
+        const total = await this.usersModel.countDocuments({ workspaceId: { $in: [workspaceId] } });
+
+        return {
+            data: users,
+            page,
+            total,
+            totalPages: Math.ceil(total / limit)
+        }
     }
 
 }

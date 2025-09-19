@@ -22,14 +22,21 @@ export class WorkspaceService {
     }
 
     //get all workspace--------------------------------------------------------------
-    async getAllWorkspace() {
-        try {
-            const allWorkspace = await this.workspaceModel.find({}, { createdAt: 0 }).exec();
-            return allWorkspace;
-        }
-        catch (err) {
-            console.log(err);
-            return err;
+    async getAllWorkspace(page: number = 1, limit: number = 10) {
+        const skip = (page - 1) * limit;
+
+        const worksapces = await this.workspaceModel.find()
+            .skip(skip)
+            .limit(limit)
+            .exec()
+
+        const total = await this.workspaceModel.countDocuments();
+
+        return {
+            data: worksapces,
+            page,
+            total,
+            totalPages: Math.ceil(total / limit)
         }
     }
 
@@ -60,9 +67,9 @@ export class WorkspaceService {
     }
 
     //edit a workspace by Id---------------------------------------------------------
-    async editWorkspaceById(workspaceId: string, {...updateWorkspaceDto}: UpdateWorkspaceDto) {
+    async editWorkspaceById(workspaceId: string, { ...updateWorkspaceDto }: UpdateWorkspaceDto) {
         try {
-            const editWorkspace = await this.workspaceModel.findOneAndUpdate({ _id: workspaceId }, { ...updateWorkspaceDto }, { returnDocument: "after" }).exec();          
+            const editWorkspace = await this.workspaceModel.findOneAndUpdate({ _id: workspaceId }, { ...updateWorkspaceDto }, { returnDocument: "after" }).exec();
             if (!editWorkspace) throw new NotFoundException("workspace not found");
             return editWorkspace;
         }
