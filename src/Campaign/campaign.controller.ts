@@ -41,8 +41,8 @@ export class CampaignController {
 
     @Get('workspace/:workspaceId')
     @UseGuards(AuthGuard)
-    async getMessages(@Param('workspaceId') workspaceId: string) {
-        return this.campaignService.getCampaignByWorkspace(workspaceId);
+    async getMessages(@Param('workspaceId') workspaceId: string, @Query('page') page: number, @Query('limit') limit: number) {
+        return this.campaignService.getCampaignByWorkspace(workspaceId, page, limit);
     }
 
     @Post()

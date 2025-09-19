@@ -99,10 +99,23 @@ export class CampaignService {
     }
 
     //get campaign by workspaceId--------------------------------------------------------------------------------------------------------
-    async getCampaignByWorkspace(workspaceId: string) {
-        const campaigns = await this.campaignModel.find({ workspaceId }).exec();
-        if (!campaigns) throw new NotFoundException('No campaigns found for this workspace');
-        return campaigns;
+    async getCampaignByWorkspace(workspaceId: string, page: number = 1, limit: number = 10) {
+        const skip = (page - 1) * limit;
+
+        const campaigns = await this.campaignModel
+            .find({ workspaceId: workspaceId })
+            .skip(skip)
+            .limit(limit)
+            .exec();
+
+        const total = await this.campaignModel.countDocuments({ workspaceId: workspaceId });
+
+        return {        
+            data: campaigns,
+            totalPages: Math.ceil(total / limit),
+            total,  
+            page
+        }
     }
 
     //get campaigns per day----------------------------------------------------------------------------------------------------------
