@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Get, Param, Delete, Put, UseGuards, Req, ParseIntPipe } from "@nestjs/common";
+import { Body, Controller, Post, Get, Param, Delete, Put, UseGuards, Req, ParseIntPipe, Query } from "@nestjs/common";
 import { WorkspaceService } from "./workspace.service";
 import { UpdateWorkspaceDto, WorkspaceDto } from "./workspace.dto";
 import { AuthGuard } from "src/Auth/auth.guard";
@@ -16,8 +16,8 @@ export class WorkspaceControl {
 
     @Get()
     @UseGuards(AuthGuard)
-    getAllWorkspace() {
-        return this.workspaceService.getAllWorkspace();
+    getAllWorkspace(@Query('page') page: number, @Query('limit') limit: number) {
+        return this.workspaceService.getAllWorkspace(page, limit);
     }
 
     @Get(':workspaceId')
