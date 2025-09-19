@@ -55,13 +55,16 @@ export class CampaignService {
             const findWorkspace = await this.workspaceModel.findById(campaignDto.workspaceId).exec();
             if (!findWorkspace) throw new NotFoundException("Workspace not found");
 
+            const targetTags = campaignDto.targetTags;
+            const contacts = await this.contactsModel.find({ workspaceId: campaignDto.workspaceId, tags: { $in: targetTags } }).exec();
+            if (!contacts || contacts.length === 0) throw new BadRequestException('No contacts with specified tags');
+
             const newCampaign = new this.campaignModel({ createdBy: req.users._id, ...campaignDto });
             const savedCampaign = await newCampaign.save();
             return savedCampaign;
         }
         catch (err) {
-            console.log(err);
-            return err;
+            throw err;
         }
     }
 
@@ -85,6 +88,10 @@ export class CampaignService {
             if (!findCampaign) throw new NotFoundException('campaign not found');
             if (findCampaign.status === 'success') throw new BadRequestException('Launched Campaign Cannot be edited');
 
+            const targetTags = updateCampaign.targetTags;
+            const contacts = await this.contactsModel.find({ workspaceId: updateCampaign.workspaceId, tags: { $in: targetTags } }).exec();
+            if (!contacts || contacts.length === 0) throw new BadRequestException('No contacts with specified tags');
+
             const editCampaign = await this.campaignModel.findOneAndUpdate(
                 { _id: campaignId },
                 { ...updateCampaign },
@@ -93,7 +100,6 @@ export class CampaignService {
             if (!editCampaign) throw new NotFoundException('campaign not found');
             return editCampaign;
         } catch (err) {
-            console.log(err);
             throw err;
         }
     }
@@ -110,10 +116,10 @@ export class CampaignService {
 
         const total = await this.campaignModel.countDocuments({ workspaceId: workspaceId });
 
-        return {        
+        return {
             data: campaigns,
             totalPages: Math.ceil(total / limit),
-            total,  
+            total,
             page
         }
     }
