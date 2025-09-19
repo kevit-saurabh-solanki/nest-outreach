@@ -15,16 +15,16 @@ export class ContactsControl {
         return this.contactService.getAllContacts();
     }
 
-    @Get(':contactId')
-    @UseGuards(AuthGuard)
-    getContactById(@Param('contactId') contactId: mongoose.Schema.Types.ObjectId) {
-        return this.contactService.getContactById(contactId);
-    }
-
     @Get('workspace/:workspaceId')
     @UseGuards(AuthGuard)
     async getContacts(@Param('workspaceId') workspaceId: string, @Query('page') page: number, @Query('limit') limit: number) {
         return this.contactService.getContactsByWorkspace(workspaceId, page, limit);
+    }
+
+    @Get('toptags')
+    @UseGuards(AuthGuard)
+    async getTopTags(@Query('workspaceId') workspaceId: string) {
+        return this.contactService.getTopTagsContacts(workspaceId);
     }
 
     @Post()
@@ -45,4 +45,9 @@ export class ContactsControl {
         return this.contactService.deleteContact(contactId);
     }
 
+    @Get(':contactId')
+    @UseGuards(AuthGuard)
+    getContactById(@Param('contactId') contactId: mongoose.Schema.Types.ObjectId) {
+        return this.contactService.getContactById(contactId);
+    }
 }

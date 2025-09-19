@@ -41,14 +41,20 @@ export class CampaignController {
 
     @Get('workspace/:workspaceId')
     @UseGuards(AuthGuard)
-    async getMessages(@Param('workspaceId') workspaceId: string) {
-        return this.campaignService.getCampaignByWorkspace(workspaceId);
+    async getMessages(@Param('workspaceId') workspaceId: string, @Query('page') page: number, @Query('limit') limit: number) {
+        return this.campaignService.getCampaignByWorkspace(workspaceId, page, limit);
     }
 
     @Post()
     @UseGuards(AuthGuard, UserGuard)
     addCampaign(@Body() campaignDto: CampaignDto, @Req() req: any) {
         return this.campaignService.addCampaign(campaignDto, req);
+    }
+
+    @Post('copy/:campaignId')
+    @UseGuards(AuthGuard, UserGuard)
+    copyCampaign(@Param('campaignId') campaignId: string, @Req() req: any) {
+        return this.campaignService.copyCampaign(campaignId, req);
     }
 
     @Delete(':campaignId')

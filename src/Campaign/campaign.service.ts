@@ -55,13 +55,16 @@ export class CampaignService {
             const findWorkspace = await this.workspaceModel.findById(campaignDto.workspaceId).exec();
             if (!findWorkspace) throw new NotFoundException("Workspace not found");
 
+            const targetTags = campaignDto.targetTags;
+            const contacts = await this.contactsModel.find({ workspaceId: campaignDto.workspaceId, tags: { $in: targetTags } }).exec();
+            if (!contacts || contacts.length === 0) throw new BadRequestException('No contacts with specified tags');
+
             const newCampaign = new this.campaignModel({ createdBy: req.users._id, ...campaignDto });
             const savedCampaign = await newCampaign.save();
             return savedCampaign;
         }
         catch (err) {
-            console.log(err);
-            return err;
+            throw err;
         }
     }
 
@@ -85,6 +88,10 @@ export class CampaignService {
             if (!findCampaign) throw new NotFoundException('campaign not found');
             if (findCampaign.status === 'success') throw new BadRequestException('Launched Campaign Cannot be edited');
 
+            const targetTags = updateCampaign.targetTags;
+            const contacts = await this.contactsModel.find({ workspaceId: updateCampaign.workspaceId, tags: { $in: targetTags } }).exec();
+            if (!contacts || contacts.length === 0) throw new BadRequestException('No contacts with specified tags');
+
             const editCampaign = await this.campaignModel.findOneAndUpdate(
                 { _id: campaignId },
                 { ...updateCampaign },
@@ -93,16 +100,28 @@ export class CampaignService {
             if (!editCampaign) throw new NotFoundException('campaign not found');
             return editCampaign;
         } catch (err) {
-            console.log(err);
             throw err;
         }
     }
 
     //get campaign by workspaceId--------------------------------------------------------------------------------------------------------
-    async getCampaignByWorkspace(workspaceId: string) {
-        const campaigns = await this.campaignModel.find({ workspaceId }).exec();
-        if (!campaigns) throw new NotFoundException('No campaigns found for this workspace');
-        return campaigns;
+    async getCampaignByWorkspace(workspaceId: string, page: number = 1, limit: number = 10) {
+        const skip = (page - 1) * limit;
+
+        const campaigns = await this.campaignModel
+            .find({ workspaceId: workspaceId })
+            .skip(skip)
+            .limit(limit)
+            .exec();
+
+        const total = await this.campaignModel.countDocuments({ workspaceId: workspaceId });
+
+        return {
+            data: campaigns,
+            totalPages: Math.ceil(total / limit),
+            total,
+            page
+        }
     }
 
     //get campaigns per day----------------------------------------------------------------------------------------------------------
@@ -289,4 +308,23 @@ export class CampaignService {
         return campaigns;
     }
 
+    //copy a campaign------------------------------------------------------------------------
+    async copyCampaign(campaignId: string, req: any) {
+        const campaign = await this.campaignModel.findById(campaignId).exec();
+        if (!campaign) throw new NotFoundException("Campaign not found");
+
+        if (campaign.status === "success") throw new BadRequestException("Launched campaign cannot be copied");
+
+        const newCampaign = new this.campaignModel({
+            createdBy: req.users._id,
+            name: campaign.name,
+            description: campaign.description,
+            messageId: campaign.messageId,
+            targetTags: campaign.targetTags,
+            workspaceId: campaign.workspaceId,
+            status: campaign.status
+        })
+
+        return newCampaign.save();
+    }
 }

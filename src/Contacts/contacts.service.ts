@@ -1,10 +1,11 @@
 import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { ContactsSchema } from "./contacts.schema";
-import mongoose, { Model } from "mongoose"
+import mongoose, { Model, mongo } from "mongoose"
 import { ContactsDto, UpdateContactsDto } from "./contacts.dto";
 import { UsersSchema } from "src/Users/users.schema";
 import { WorkspaceSchema } from "src/Workspace/workspace.schema";
+import { count } from "console";
 
 @Injectable()
 export class ContactsService {
@@ -96,5 +97,34 @@ export class ContactsService {
             page,
             totalPages: Math.ceil(total / limit),
         };
+    }
+
+    //getToptags------------------------------------------------------
+    async getTopTagsContacts(workspaceId: string) {
+        const tags = await this.contactModel.aggregate([
+            {
+                $match: { workspaceId: new mongoose.Types.ObjectId(workspaceId) }
+            },
+            {
+                $unwind: "$tags"
+            },
+            {
+                $group: {
+                    _id: "$tags",
+                    count: { $sum: 1 }
+                }
+            },
+            {
+                $sort: { count: -1 }
+            },
+            {
+                $limit: 5
+            }
+        ]).exec();
+
+        return tags.map(tag => ({
+            tag: tag._id,
+            count: tag.count
+        }));
     }
 }
