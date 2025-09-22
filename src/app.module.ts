@@ -20,9 +20,9 @@ import { CampaignModule } from './Campaign/campaign.module';
     ContactsModule,
     MessageModule,
     CampaignModule,
-    MongooseModule.forRoot(`mongodb+srv://saurabhsolanki:${process.env.MONGO_PASS}@cluster0.x0iofqd.mongodb.net/nestOutreach?retryWrites=true&w=majority&appName=Cluster0`)
+    MongooseModule.forRoot(`${process.env.MONGO_URI}`)
   ],
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class AppModule { }
