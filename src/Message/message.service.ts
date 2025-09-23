@@ -41,6 +41,10 @@ export class MessageService {
     //add message----------------------------------------------------------------
     async addMessage({ ...messageDto }: MessageDto, req: any) {
         try {
+            if (!messageDto.imagePath || !messageDto.filePath || messageDto.messageType === "Text") {
+                messageDto.imagePath = undefined;
+                messageDto.filePath = undefined;
+            }
             const newMessage = new this.messageModel({ createdBy: req.users._id, ...messageDto });
             const savedMessage = await newMessage.save();
             return savedMessage
@@ -77,7 +81,7 @@ export class MessageService {
         }
     }
 
-    //get contact by workspace id------------------------------------------
+    //get messages by workspace id------------------------------------------
     async getMessagesByWorkspace(workspaceId: string) {
         const messages = await this.messageModel.find({ workspaceId }).exec();
         if (!messages) throw new NotFoundException('No messages found for this workspace');

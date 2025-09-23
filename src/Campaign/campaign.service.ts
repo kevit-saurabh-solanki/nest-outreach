@@ -182,6 +182,7 @@ export class CampaignService {
             content: message.content,
             type: message.messageType,
             imagePath: message.messageType === 'Text and Image' ? message.imagePath : undefined,
+            filePath: message.messageType === 'Text and Image' ? message.filePath : undefined,
         };
 
         // 5. Snapshot contacts

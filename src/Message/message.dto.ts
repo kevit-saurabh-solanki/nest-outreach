@@ -15,6 +15,10 @@ export class MessageDto {
     @IsString()
     imagePath?: string;
 
+    @IsOptional()
+    @IsString()
+    filePath?: string;
+
     @IsNotEmpty()
     @IsString()
     content: string;
@@ -38,6 +42,10 @@ export class UpdateMessageDto {
     @IsOptional()
     @IsString()
     imagePath?: string;
+
+    @IsOptional()
+    @IsString()
+    filePath?: string;
 
     @IsOptional()
     @IsString()
