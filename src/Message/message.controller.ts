@@ -53,8 +53,19 @@ export class MessageControl {
     }
 
     @Put(':messageId')
+    @UseInterceptors(FileInterceptor('filePath', {
+        storage: diskStorage({
+            destination: './uploads',
+            filename: (req, file, cb) => {
+                cb(null, file.originalname);
+            }
+        })
+    }))
     @UseGuards(AuthGuard, UserGuard)
-    editMessage(@Param('messageId') messageId: mongoose.Schema.Types.ObjectId, @Body() updateMessageDto: UpdateMessageDto) {
+    editMessage(@Param('messageId') messageId: mongoose.Schema.Types.ObjectId, @Body() updateMessageDto: UpdateMessageDto, @UploadedFile() filePath: Express.Multer.File) {
+         if (filePath) {
+            updateMessageDto.filePath = filePath.originalname;
+        }
         return this.messageService.editMessage(messageId, updateMessageDto);
     }
 }

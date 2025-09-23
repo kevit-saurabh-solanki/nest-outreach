@@ -69,9 +69,19 @@ export class MessageService {
     }
 
     //edit message
-    async editMessage(messageId: mongoose.Schema.Types.ObjectId, { ...updateMessage }: UpdateMessageDto) {
+    async editMessage(messageId: mongoose.Schema.Types.ObjectId, updateMessage: UpdateMessageDto) {
         try {
-            const editMessage = await this.messageModel.findOneAndUpdate({ _id: messageId }, { ...updateMessage }, { returnDocument: "after" }).exec();
+            if (!updateMessage.messageType) return;
+            const updateOps: any = { ...updateMessage };
+            if (updateMessage.messageType.trim().toLowerCase() === 'text') {
+                updateOps.$unset = {
+                    imagePath: "",
+                    filePath: ""
+                };
+                delete updateOps.imagePath;
+                delete updateOps.filePath;
+            }
+            const editMessage = await this.messageModel.findOneAndUpdate({ _id: messageId }, updateOps, { returnDocument: "after" }).exec();
             if (!editMessage) throw new NotFoundException("message not found");
             return editMessage;
         }
