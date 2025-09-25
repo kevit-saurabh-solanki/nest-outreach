@@ -1,26 +1,32 @@
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Inject, Injectable } from '@nestjs/common';
-import type { Cache } from 'cache-manager';
+import Redis from 'ioredis';
 
 @Injectable()
 export class CacheService {
 
-    constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) { }
+    constructor(@Inject('REDIS_CLIENT') private readonly redisClient: Redis) { }
 
-    async wrap<T>(
-        key: string,
-        fetchFunction: () => Promise<T>,
-        ttlSec = 120
-    ): Promise<T> {
-        const cached = await this.cacheManager.get<T>(key);
+    async wrap<T>(key: string, fetchFuction: () => Promise<T>, ttlSec = 120) {
+        const cached = await this.redisClient.get(key);
         if (cached) {
-            console.log(`[CACHE HIT] ${key}`);
-            return cached;
+            return JSON.parse(cached)
         }
 
-        console.log(`[CACHE MISS] ${key}`);
-        const freshData = await fetchFunction();
-        await this.cacheManager.set(key, freshData,  ttlSec * 1000);
+        const freshData = await fetchFuction();
+        await this.redisClient.set(key, JSON.stringify(freshData), "EX", ttlSec);
         return freshData;
+    }
+
+    async set<T>(key: string, value: T, ttlSec = 120): Promise<void> {
+        await this.redisClient.set(key,  JSON.stringify(value), "EX", ttlSec);
+    }
+
+    async get<T>(key: string): Promise<T | null> {
+        const cached = await this.redisClient.get(key);
+        return cached ? JSON.parse(cached) : null;
+    }
+
+    async del<T>(key: string): Promise<void> {
+        await this.redisClient.del(key);
     }
 }

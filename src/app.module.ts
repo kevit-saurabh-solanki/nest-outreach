@@ -7,21 +7,11 @@ import { ContactsModule } from './Contacts/contacts.module';
 import { MessageModule } from './Message/message.module';
 import { ConfigModule } from '@nestjs/config';
 import { CampaignModule } from './Campaign/campaign.module';
-import { CacheModule } from '@nestjs/cache-manager';
 import { CacheService } from './Shared/cache/cache.service';
-import * as redisStore from 'cache-manager-ioredis';
+import { RedisModule } from './Shared/cache/redis.module';
 
 @Module({
   imports: [
-    CacheModule.registerAsync({
-      useFactory: async () => ({
-        store: redisStore,
-        host: "localhost",
-        port: 6379,
-        ttl: 60
-      }),
-      isGlobal: true
-    }),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env'
@@ -32,6 +22,7 @@ import * as redisStore from 'cache-manager-ioredis';
     ContactsModule,
     MessageModule,
     CampaignModule,
+    RedisModule,
     MongooseModule.forRoot(`${process.env.MONGO_URI}`)
   ],
   controllers: [],
