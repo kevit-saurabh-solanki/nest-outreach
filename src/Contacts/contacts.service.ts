@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
+import { ConflictException, Inject, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { ContactsSchema } from "./contacts.schema";
 import mongoose, { Model, mongo } from "mongoose"
@@ -6,23 +6,21 @@ import { ContactsDto, UpdateContactsDto } from "./contacts.dto";
 import { UsersSchema } from "src/Users/users.schema";
 import { WorkspaceSchema } from "src/Workspace/workspace.schema";
 import { count } from "console";
+import { CacheService } from "src/Shared/cache/cache.service";
 
 @Injectable()
 export class ContactsService {
     constructor(@InjectModel(ContactsSchema.name) private contactModel: Model<ContactsSchema>,
         @InjectModel(UsersSchema.name) private userModel: Model<UsersSchema>,
-        @InjectModel(WorkspaceSchema.name) private workspaceModel: Model<WorkspaceSchema>) { }
+        @InjectModel(WorkspaceSchema.name) private workspaceModel: Model<WorkspaceSchema>,
+        private cacheService: CacheService) { }
 
     //get all contacts------------------------------------------------------------
     async getAllContacts() {
-        try {
-            const allContacts = await this.contactModel.find({}).exec();
-            return allContacts;
-        }
-        catch (err) {
-            console.log(err);
-            return err;
-        }
+        return this.cacheService.wrap('contacts', async () => {
+            const contacts = await this.contactModel.find().exec();
+            return contacts;
+        }, 120)
     }
 
     //get contact by id--------------------------------------------------------------
