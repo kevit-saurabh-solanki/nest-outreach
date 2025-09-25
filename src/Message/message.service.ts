@@ -5,37 +5,40 @@ import mongoose, { Model } from 'mongoose'
 import { MessageDto, UpdateMessageDto } from "./message.dto";
 import { UsersSchema } from "src/Users/users.schema";
 import { WorkspaceSchema } from "src/Workspace/workspace.schema";
+import { CacheService } from "src/Shared/cache/cache.service";
 
 
 @Injectable()
 export class MessageService {
     constructor(@InjectModel(MessageSchema.name) private messageModel: Model<MessageSchema>,
         @InjectModel(UsersSchema.name) private userModel: Model<UsersSchema>,
-        @InjectModel(WorkspaceSchema.name) private workspaceModel: Model<WorkspaceSchema>) { }
+        @InjectModel(WorkspaceSchema.name) private workspaceModel: Model<WorkspaceSchema>,
+        private readonly cacheService: CacheService) { }
 
     //get all message--------------------------------------------------------
     async getAllMessage() {
-        try {
-            const allMessage = await this.messageModel.find({}).exec();
-            return allMessage;
-        }
-        catch (err) {
-            console.log(err);
-            return err;
-        }
+        return this.cacheService.wrap(`messages`, async () => {
+            return await this.messageModel.find().exec();
+        }, 120)
     }
 
     //get message by Id--------------------------------------------------------
     async getMessageById(messageId: mongoose.Schema.Types.ObjectId) {
-        try {
-            const singleMessage = await this.messageModel.findOne({ _id: messageId }).populate(['workspaceId', 'createdBy']).exec();
+        return this.cacheService.wrap(`message:${messageId}`, async () => {
+            const singleMessage = await this.messageModel.findOne({ _id: messageId })
+                .populate([
+                    {
+                        path: 'workspaceId',
+                        select: 'name _id'
+                    },
+                    {
+                        path: 'createdBy',
+                        select: 'email _id'
+                    }
+                ]).exec();
             if (!singleMessage) throw new NotFoundException("Message not found");
             return singleMessage;
-        }
-        catch (err) {
-            console.log(err);
-            return err;
-        }
+        }, 120)
     }
 
     //add message----------------------------------------------------------------
@@ -47,6 +50,7 @@ export class MessageService {
             }
             const newMessage = new this.messageModel({ createdBy: req.users._id, ...messageDto });
             const savedMessage = await newMessage.save();
+            this.cacheService.set(`message:${savedMessage._id}`, savedMessage, 120);
             return savedMessage
         }
         catch (err) {
@@ -60,6 +64,7 @@ export class MessageService {
         try {
             const deleteMessage = await this.messageModel.findOneAndDelete({ _id: messageId }).exec();
             if (!deleteMessage) throw new NotFoundException("message not found");
+            await this.cacheService.del(`message:${messageId}`);
             return deleteMessage;
         }
         catch (err) {
@@ -83,6 +88,7 @@ export class MessageService {
             }
             const editMessage = await this.messageModel.findOneAndUpdate({ _id: messageId }, updateOps, { returnDocument: "after" }).exec();
             if (!editMessage) throw new NotFoundException("message not found");
+            this.cacheService.set(`message:${editMessage._id}`, editMessage, 120);
             return editMessage;
         }
         catch (err) {
@@ -93,8 +99,8 @@ export class MessageService {
 
     //get messages by workspace id------------------------------------------
     async getMessagesByWorkspace(workspaceId: string) {
-        const messages = await this.messageModel.find({ workspaceId }).exec();
-        if (!messages) throw new NotFoundException('No messages found for this workspace');
-        return messages;
+        return this.cacheService.wrap(`messages:workspace:${workspaceId}`, async () => {
+            return await this.messageModel.find({ workspaceId }).exec();
+        }, 120);
     }
 }

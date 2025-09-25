@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
+import { ConflictException, Inject, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { ContactsSchema } from "./contacts.schema";
 import mongoose, { Model, mongo } from "mongoose"
@@ -6,97 +6,89 @@ import { ContactsDto, UpdateContactsDto } from "./contacts.dto";
 import { UsersSchema } from "src/Users/users.schema";
 import { WorkspaceSchema } from "src/Workspace/workspace.schema";
 import { count } from "console";
+import { CacheService } from "src/Shared/cache/cache.service";
 
 @Injectable()
 export class ContactsService {
     constructor(@InjectModel(ContactsSchema.name) private contactModel: Model<ContactsSchema>,
         @InjectModel(UsersSchema.name) private userModel: Model<UsersSchema>,
-        @InjectModel(WorkspaceSchema.name) private workspaceModel: Model<WorkspaceSchema>) { }
+        @InjectModel(WorkspaceSchema.name) private workspaceModel: Model<WorkspaceSchema>,
+        private cacheService: CacheService) { }
 
     //get all contacts------------------------------------------------------------
     async getAllContacts() {
-        try {
-            const allContacts = await this.contactModel.find({}).exec();
-            return allContacts;
-        }
-        catch (err) {
-            console.log(err);
-            return err;
-        }
+        return this.cacheService.wrap('contacts', async () => {
+            return await this.contactModel.find();
+        }, 120);
     }
 
     //get contact by id--------------------------------------------------------------
     async getContactById(contactId: mongoose.Schema.Types.ObjectId) {
-        try {
-            const foundContact = await this.contactModel.findById(contactId).populate(['workspaceId name', 'createdBy email']).exec();
+        return this.cacheService.wrap(`contact:${contactId}`, async () => {
+            const foundContact = await this.contactModel.findById(contactId)
+                .populate([
+                    {
+                        path: 'workspaceId',
+                        select: '_id name'
+                    },
+                    {
+                        path: 'createdBy',
+                        select: '_id email'
+                    }
+                ]).exec();
             if (!foundContact) throw new NotFoundException("Contact not found");
             return foundContact;
-        }
-        catch (err) {
-            console.log(err);
-            return err;
-        }
+        }, 120)
     }
 
     //add contact--------------------------------------------------------------------
     async addContact({ ...contactDto }: ContactsDto, req: any) {
-        try {
-            const findContact = await this.contactModel.findOne({ $and: [{ phoneNumber: contactDto.phoneNumber }, { workspaceId: contactDto.workspaceId }] }).exec();
-            if (findContact) throw new ConflictException("Contact already exist in the workspace");
-            const newContact = new this.contactModel({ createdBy: req.users._id, ...contactDto });
-            const savedContact = await newContact.save();
-            return savedContact;
-        }
-        catch (err) {
-            console.log(err);
-            return err;
-        }
+        const findContact = await this.contactModel.findOne({ $and: [{ phoneNumber: contactDto.phoneNumber }, { workspaceId: contactDto.workspaceId }] }).exec();
+
+        if (findContact) throw new ConflictException("Contact already exist in the workspace");
+        const newContact = new this.contactModel({ createdBy: req.users._id, ...contactDto });
+        const savedContact = await newContact.save();
+
+        this.cacheService.set(`contact:${savedContact._id}`, savedContact, 120);
+        return savedContact;
     }
 
     //delete contact------------------------------------------------------------------
     async deleteContact(contactId: mongoose.Schema.Types.ObjectId) {
-        try {
-            const deleteContact = await this.contactModel.findOneAndDelete({ _id: contactId }, { returnDocument: "after" }).exec();
-            if (!deleteContact) throw new NotFoundException("Contact not found");
-            return deleteContact;
-        }
-        catch (err) {
-            console.log(err);
-            return err;
-        }
+        const deleteContact = await this.contactModel.findOneAndDelete({ _id: contactId }, { returnDocument: "after" }).exec();
+        if (!deleteContact) throw new NotFoundException("Contact not found");
+        this.cacheService.del(`contact:${deleteContact._id}`);
+        return deleteContact;
     }
 
     //edit contact---------------------------------------------------------------------
     async editContact(contactId: mongoose.Schema.Types.ObjectId, { ...updateContactDto }: UpdateContactsDto) {
-        try {
-            const editContact = await this.contactModel.findByIdAndUpdate({ _id: contactId }, { ...updateContactDto }, { returnDocument: "after" }).exec();
-            if (!editContact) throw new NotFoundException("Contact not found");
-            return editContact;
-        }
-        catch (err) {
-            console.log(err);
-            return err;
-        }
+        const editContact = await this.contactModel.findByIdAndUpdate({ _id: contactId }, { ...updateContactDto }, { returnDocument: "after" }).exec();
+        if (!editContact) throw new NotFoundException("Contact not found");
+        this.cacheService.set(`contact:${editContact._id}`, editContact, 120);
+        return editContact;
     }
 
     //get contact by workspace id------------------------------------------
     async getContactsByWorkspace(workspaceId: string, page: number = 1, limit: number = 10) {
-        const skip = (page - 1) * limit;
+        return this.cacheService.wrap(`contacts:workspaceId:${workspaceId}`, async () => {
+            const skip = (page - 1) * limit;
 
-        const contacts = await this.contactModel
-            .find({ workspaceId }) // filter contacts of this workspace
-            .skip(skip)
-            .limit(limit)
-            .exec();
+            const contacts = await this.contactModel
+                .find({ workspaceId }) // filter contacts of this workspace
+                .skip(skip)
+                .limit(limit)
+                .exec();
 
-        const total = await this.contactModel.countDocuments({ workspaceId });
+            const total = await this.contactModel.countDocuments({ workspaceId });
 
-        return {
-            data: contacts,
-            total,
-            page,
-            totalPages: Math.ceil(total / limit),
-        };
+            return {
+                data: contacts,
+                total,
+                page,
+                totalPages: Math.ceil(total / limit),
+            };
+        }, 120)
     }
 
     //getToptags------------------------------------------------------

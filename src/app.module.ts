@@ -7,6 +7,8 @@ import { ContactsModule } from './Contacts/contacts.module';
 import { MessageModule } from './Message/message.module';
 import { ConfigModule } from '@nestjs/config';
 import { CampaignModule } from './Campaign/campaign.module';
+import { CacheService } from './Shared/cache/cache.service';
+import { RedisModule } from './Shared/cache/redis.module';
 
 @Module({
   imports: [
@@ -20,9 +22,10 @@ import { CampaignModule } from './Campaign/campaign.module';
     ContactsModule,
     MessageModule,
     CampaignModule,
+    RedisModule,
     MongooseModule.forRoot(`${process.env.MONGO_URI}`)
   ],
   controllers: [],
-  providers: [],
+  providers: [CacheService],
 })
 export class AppModule { }

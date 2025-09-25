@@ -6,6 +6,8 @@ import { contactsSchema, ContactsSchema } from "./contacts.schema";
 import { usersSchema, UsersSchema } from "src/Users/users.schema";
 import { workspaceSchema, WorkspaceSchema } from "src/Workspace/workspace.schema";
 import { AuthModule } from "src/Auth/auth.module";
+import { CacheService } from "src/Shared/cache/cache.service";
+import { RedisModule } from "src/Shared/cache/redis.module";
 
 @Module({
     imports: [MongooseModule.forFeature([
@@ -22,8 +24,9 @@ import { AuthModule } from "src/Auth/auth.module";
             schema: workspaceSchema
         }
     ]),
-        AuthModule],
+        AuthModule,
+        RedisModule],
     controllers: [ContactsControl],
-    providers: [ContactsService]
+    providers: [ContactsService, CacheService]
 })
 export class ContactsModule { }

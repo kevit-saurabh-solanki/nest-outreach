@@ -18,7 +18,7 @@ export class AuthGuard implements CanActivate {
             req["users"] = payload;
         }
         catch(err) {
-            console.log(err);
+            throw new UnauthorizedException("forbidden resource");
         }
 
         return true;

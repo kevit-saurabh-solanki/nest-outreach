@@ -6,8 +6,8 @@ import { workspaceSchema, WorkspaceSchema } from "src/Workspace/workspace.schema
 import { MessageControl } from "./message.controller";
 import { MessageService } from "./message.service";
 import { AuthModule } from "src/Auth/auth.module";
-import { MulterModule } from "@nestjs/platform-express";
-import { diskStorage } from "multer";
+import { RedisModule } from "src/Shared/cache/redis.module";
+import { CacheService } from "src/Shared/cache/cache.service";
 
 @Module({
     imports: [MongooseModule.forFeature([
@@ -24,8 +24,9 @@ import { diskStorage } from "multer";
             schema: workspaceSchema
         }
     ]),
-        AuthModule],
+        AuthModule,
+        RedisModule],
     controllers: [MessageControl],
-    providers: [MessageService]
+    providers: [MessageService, CacheService]
 })
 export class MessageModule { }
