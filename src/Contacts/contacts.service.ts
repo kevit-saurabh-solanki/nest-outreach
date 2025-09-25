@@ -57,10 +57,8 @@ export class ContactsService {
     async deleteContact(contactId: mongoose.Schema.Types.ObjectId) {
         const deleteContact = await this.contactModel.findOneAndDelete({ _id: contactId }, { returnDocument: "after" }).exec();
         if (!deleteContact) throw new NotFoundException("Contact not found");
-        this.cacheService.del(`contact:${deleteContact._id}`)
+        this.cacheService.del(`contact:${deleteContact._id}`);
         return deleteContact;
-
-
     }
 
     //edit contact---------------------------------------------------------------------
