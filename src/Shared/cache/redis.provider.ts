@@ -5,7 +5,7 @@ export const RedisProvider: Provider = {
     provide: 'REDIS_CLIENT' ,
     useFactory: () => {
         return new Redis({
-            host: "redis",
+            host: "localhost",
             port: 6379
         })
     }
