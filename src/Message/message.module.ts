@@ -8,6 +8,7 @@ import { MessageService } from "./message.service";
 import { AuthModule } from "src/Auth/auth.module";
 import { RedisModule } from "src/Shared/cache/redis.module";
 import { CacheService } from "src/Shared/cache/cache.service";
+import { AuditPublisher } from "src/Shared/audit-logs/auditPublisher.service";
 
 @Module({
     imports: [MongooseModule.forFeature([
@@ -27,6 +28,6 @@ import { CacheService } from "src/Shared/cache/cache.service";
         AuthModule,
         RedisModule],
     controllers: [MessageControl],
-    providers: [MessageService, CacheService]
+    providers: [MessageService, CacheService, AuditPublisher]
 })
 export class MessageModule { }

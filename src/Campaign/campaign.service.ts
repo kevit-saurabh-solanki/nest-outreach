@@ -8,6 +8,8 @@ import mongoose from 'mongoose';
 import { CampaignDto, UpdateCampaignDto } from "./campaign.dto";
 import { Contacts } from "src/Contacts/contacts.schema";
 import { Messages } from "src/Message/message.schema";
+import { CacheService } from "src/Shared/cache/cache.service";
+import { AuditPublisher } from "src/Shared/audit-logs/auditPublisher.service";
 
 interface RecentCampaign {
     name: string;
@@ -22,31 +24,37 @@ export class CampaignService {
         @InjectModel(UsersSchema.name) private userModel: Model<UsersSchema>,
         @InjectModel(WorkspaceSchema.name) private workspaceModel: Model<WorkspaceSchema>,
         @InjectModel(Contacts.name) private contactsModel: Model<Contacts>,
-        @InjectModel(Messages.name) private messageModel: Model<Messages>) { }
+        @InjectModel(Messages.name) private messageModel: Model<Messages>,
+        private readonly cacheService: CacheService,
+        private readonly auditPublisher: AuditPublisher) { }
 
     //get all campaign--------------------------------------------------------
     async getAllCampaign() {
-        try {
-            const allCampaign = await this.campaignModel.find({}).exec();
-            return allCampaign;
-        }
-        catch (err) {
-            console.log(err);
-            return err;
-        }
+        return this.cacheService.wrap(`campaigns`, async () => {
+            return await this.campaignModel.find().exec();
+        }, 120)
     }
 
     //get campaign by Id--------------------------------------------------------
     async getCampaignById(campaignId: mongoose.Schema.Types.ObjectId) {
-        try {
-            const singleCampaign = await this.campaignModel.findOne({ _id: campaignId }).populate(["workspaceId name", "createdBy email", "messageId title"]).exec();
+        return this.cacheService.wrap(`campaign:${campaignId}`, async () => {
+            const singleCampaign = await this.campaignModel.findOne({ _id: campaignId }).populate([
+                {
+                    path: 'workspaceId',
+                    select: 'name _id'
+                },
+                {
+                    path: 'createdBy',
+                    select: 'email _id'
+                },
+                {
+                    path: 'messageId',
+                    select: 'title _id'
+                }
+            ]).exec();
             if (!singleCampaign) throw new NotFoundException("Campaign not found");
             return singleCampaign;
-        }
-        catch (err) {
-            console.log(err);
-            return err;
-        }
+        }, 120);
     }
 
     //add campaign----------------------------------------------------------------
@@ -61,6 +69,16 @@ export class CampaignService {
 
             const newCampaign = new this.campaignModel({ createdBy: req.users._id, ...campaignDto });
             const savedCampaign = await newCampaign.save();
+            this.cacheService.set(`campaign:${savedCampaign._id}`, savedCampaign, 120);
+            const logs = {
+                actionTakenBy: savedCampaign.createdBy,
+                actionDoneAt: Date.now().toString(),
+                actionTakenOn: savedCampaign._id,
+                action: 'Added',
+                resource: 'Campaigns',
+                workspaceId: savedCampaign.workspaceId
+            };
+            this.auditPublisher.publishLogs(logs);
             return savedCampaign;
         }
         catch (err) {
@@ -73,6 +91,16 @@ export class CampaignService {
         try {
             const deleteCampaign = await this.campaignModel.findOneAndDelete({ _id: campaignId }).exec();
             if (!deleteCampaign) throw new NotFoundException("campaign not found");
+            this.cacheService.del(`campaign:${campaignId}`);
+            const logs = {
+                actionTakenBy: deleteCampaign.createdBy,
+                actionDoneAt: Date.now().toString(),
+                actionTakenOn: deleteCampaign._id,
+                action: 'Deleted',
+                resource: 'Campaigns',
+                workspaceId: deleteCampaign.workspaceId
+            };
+            this.auditPublisher.publishLogs(logs);
             return deleteCampaign;
         }
         catch (err) {
@@ -98,6 +126,16 @@ export class CampaignService {
                 { new: true }
             );
             if (!editCampaign) throw new NotFoundException('campaign not found');
+            this.cacheService.set(`campaign:${campaignId}`, editCampaign, 120);
+            const logs = {
+                actionTakenBy: editCampaign.createdBy,
+                actionDoneAt: Date.now().toString(),
+                actionTakenOn: editCampaign._id,
+                action: 'Updated',
+                resource: 'Campaigns',
+                workspaceId: editCampaign.workspaceId
+            };
+            this.auditPublisher.publishLogs(logs);
             return editCampaign;
         } catch (err) {
             throw err;
@@ -105,23 +143,25 @@ export class CampaignService {
     }
 
     //get campaign by workspaceId--------------------------------------------------------------------------------------------------------
-    async getCampaignByWorkspace(workspaceId: string, page: number = 1, limit: number = 10) {
-        const skip = (page - 1) * limit;
+    async getCampaignByWorkspace(workspaceId: string, page: number = 1, limit: number = 10) { 
+        return this.cacheService.wrap(`camapaigns:workspace:${workspaceId}`, async () => {
+            const skip = (page - 1) * limit;
 
-        const campaigns = await this.campaignModel
-            .find({ workspaceId: workspaceId })
-            .skip(skip)
-            .limit(limit)
-            .exec();
+            const campaigns = await this.campaignModel
+                .find({ workspaceId: workspaceId })
+                .skip(skip)
+                .limit(limit)
+                .exec();
 
-        const total = await this.campaignModel.countDocuments({ workspaceId: workspaceId });
+            const total = await this.campaignModel.countDocuments({ workspaceId: workspaceId });
 
-        return {
-            data: campaigns,
-            totalPages: Math.ceil(total / limit),
-            total,
-            page
-        }
+            return {
+                data: campaigns,
+                totalPages: Math.ceil(total / limit),
+                total,
+                page
+            }
+        }, 120)
     }
 
     //get campaigns per day----------------------------------------------------------------------------------------------------------
@@ -196,6 +236,8 @@ export class CampaignService {
         campaign.launchedAt = new Date();
         campaign.status = 'success';
 
+        this.cacheService.set(`campaign:${campaign._id}`, campaign, 120);
+
         // 7. Save and return
         return campaign.save();
     }
@@ -218,7 +260,7 @@ export class CampaignService {
             // 🔍 join with Message collection to get messageType
             {
                 $lookup: {
-                    from: "messageschemas", // collection name for Messages
+                    from: "messages", // collection name for Messages
                     localField: "messageId",
                     foreignField: "_id",
                     as: "message"

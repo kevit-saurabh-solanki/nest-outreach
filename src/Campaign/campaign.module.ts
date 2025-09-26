@@ -8,6 +8,9 @@ import { WorkspaceSchema, workspaceSchema } from "src/Workspace/workspace.schema
 import { AuthModule } from "src/Auth/auth.module";
 import { contactsSchema, Contacts } from "src/Contacts/contacts.schema";
 import { messageSchema, Messages } from "src/Message/message.schema";
+import { RedisModule } from "src/Shared/cache/redis.module";
+import { CacheService } from "src/Shared/cache/cache.service";
+import { AuditPublisher } from "src/Shared/audit-logs/auditPublisher.service";
 
 @Module({
     imports: [MongooseModule.forFeature([
@@ -32,8 +35,9 @@ import { messageSchema, Messages } from "src/Message/message.schema";
             schema: messageSchema
         }
     ]),
-        AuthModule],
+        AuthModule,
+        RedisModule],
     controllers: [CampaignController],
-    providers: [CampaignService]
+    providers: [CampaignService, CacheService, AuditPublisher]
 })
 export class CampaignModule { }
