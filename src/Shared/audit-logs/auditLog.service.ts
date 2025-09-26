@@ -21,6 +21,10 @@ export class AuditLogService {
                 {
                     path: 'actionTakenBy',
                     select: 'email _id'
+                },
+                {
+                    path: 'actionTakenOn',
+                    select: '_id name title phoneNumber'
                 }
             ]).exec();
             return logs;

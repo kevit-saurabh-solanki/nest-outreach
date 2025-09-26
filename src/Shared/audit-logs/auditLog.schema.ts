@@ -10,7 +10,7 @@ export class AuditLogSchema {
     @Prop({ required: true, default: Date.now().toString() })
     actionDoneAt: Date;
 
-    @Prop({ required: false, refPath: 'resource' })
+    @Prop({ required: true, refPath: 'resource' })
     actionTakenOn: mongoose.Schema.Types.ObjectId;
 
     @Prop({ required: true })

@@ -55,6 +55,7 @@ export class ContactsService {
          const logs = {
             actionTakenBy: savedContact.createdBy,
             actionDoneAt: Date.now().toString(),
+            actionTakenOn: savedContact._id,
             action: 'Added',
             resource: 'Contacts',
             workspaceId: savedContact.workspaceId
@@ -71,6 +72,7 @@ export class ContactsService {
         const logs = {
             actionTakenBy: deleteContact.createdBy,
             actionDoneAt: Date.now().toString(),
+            actionTakenOn: deleteContact._id,
             action: 'Deleted',
             resource: 'Contacts',
             workspaceId: deleteContact.workspaceId
@@ -87,6 +89,7 @@ export class ContactsService {
         const logs = {
             actionTakenBy: editContact.createdBy,
             actionDoneAt: Date.now().toString(),
+            actionTakenOn: editContact._id,
             action: 'Updated',
             resource: 'Contacts',
             workspaceId: editContact.workspaceId
