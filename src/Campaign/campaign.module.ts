@@ -2,17 +2,20 @@ import { Module } from "@nestjs/common";
 import { CampaignController } from "./campaign.controller";
 import { CampaignService } from "./campaign.service";
 import { MongooseModule } from "@nestjs/mongoose";
-import { campaignSchema, CampaignSchema } from "./campaign.schema";
+import { campaignSchema, Campaigns } from "./campaign.schema";
 import { UsersSchema, usersSchema } from "src/Users/users.schema";
 import { WorkspaceSchema, workspaceSchema } from "src/Workspace/workspace.schema";
 import { AuthModule } from "src/Auth/auth.module";
-import { contactsSchema, ContactsSchema } from "src/Contacts/contacts.schema";
-import { messageSchema, MessageSchema } from "src/Message/message.schema";
+import { contactsSchema, Contacts } from "src/Contacts/contacts.schema";
+import { messageSchema, Messages } from "src/Message/message.schema";
+import { RedisModule } from "src/Shared/cache/redis.module";
+import { CacheService } from "src/Shared/cache/cache.service";
+import { AuditPublisher } from "src/Shared/audit-logs/auditPublisher.service";
 
 @Module({
     imports: [MongooseModule.forFeature([
         {
-            name: CampaignSchema.name,
+            name: Campaigns.name,
             schema: campaignSchema
         },
         {
@@ -24,16 +27,17 @@ import { messageSchema, MessageSchema } from "src/Message/message.schema";
             schema: workspaceSchema
         },
         {
-            name: ContactsSchema.name,
+            name: Contacts.name,
             schema: contactsSchema
         },
         {
-            name: MessageSchema.name,
+            name: Messages.name,
             schema: messageSchema
         }
     ]),
-        AuthModule],
+        AuthModule,
+        RedisModule],
     controllers: [CampaignController],
-    providers: [CampaignService]
+    providers: [CampaignService, CacheService, AuditPublisher]
 })
 export class CampaignModule { }

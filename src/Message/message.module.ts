@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
-import { messageSchema, MessageSchema } from "./message.schema";
+import { messageSchema, Messages } from "./message.schema";
 import { usersSchema, UsersSchema } from "src/Users/users.schema";
 import { workspaceSchema, WorkspaceSchema } from "src/Workspace/workspace.schema";
 import { MessageControl } from "./message.controller";
@@ -8,11 +8,12 @@ import { MessageService } from "./message.service";
 import { AuthModule } from "src/Auth/auth.module";
 import { RedisModule } from "src/Shared/cache/redis.module";
 import { CacheService } from "src/Shared/cache/cache.service";
+import { AuditPublisher } from "src/Shared/audit-logs/auditPublisher.service";
 
 @Module({
     imports: [MongooseModule.forFeature([
         {
-            name: MessageSchema.name,
+            name: Messages.name,
             schema: messageSchema
         },
         {
@@ -27,6 +28,6 @@ import { CacheService } from "src/Shared/cache/cache.service";
         AuthModule,
         RedisModule],
     controllers: [MessageControl],
-    providers: [MessageService, CacheService]
+    providers: [MessageService, CacheService, AuditPublisher]
 })
 export class MessageModule { }

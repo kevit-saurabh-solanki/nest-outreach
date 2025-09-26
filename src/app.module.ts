@@ -9,6 +9,8 @@ import { ConfigModule } from '@nestjs/config';
 import { CampaignModule } from './Campaign/campaign.module';
 import { CacheService } from './Shared/cache/cache.service';
 import { RedisModule } from './Shared/cache/redis.module';
+import { LogConsumer } from './Shared/audit-logs/logConsumer.controller';
+import { AuditLogModule } from './Shared/audit-logs/auditLog.module';
 
 @Module({
   imports: [
@@ -23,6 +25,7 @@ import { RedisModule } from './Shared/cache/redis.module';
     MessageModule,
     CampaignModule,
     RedisModule,
+    AuditLogModule,
     MongooseModule.forRoot(`${process.env.MONGO_URI}`)
   ],
   controllers: [],

@@ -3,11 +3,11 @@ import mongoose from "mongoose";
 
 
 @Schema({ timestamps: true })
-export class CampaignSchema {
+export class Campaigns {
     @Prop({ required: true })
     name: string;
 
-    @Prop({ required: true, ref: "MessageSchema" })
+    @Prop({ required: true, ref: "Messages" })
     messageId: mongoose.Schema.Types.ObjectId;
 
     @Prop({ required: false })
@@ -46,4 +46,4 @@ export class CampaignSchema {
 }
 
 
-export const campaignSchema = SchemaFactory.createForClass(CampaignSchema);
+export const campaignSchema = SchemaFactory.createForClass(Campaigns);

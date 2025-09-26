@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import mongoose from "mongoose";
 
 @Schema({ timestamps: true })
-export class MessageSchema {
+export class Messages {
 
     @Prop({ required: true })
     title: string;
@@ -26,4 +26,4 @@ export class MessageSchema {
     createdBy: mongoose.Schema.Types.ObjectId;
 }
 
-export const messageSchema = SchemaFactory.createForClass(MessageSchema);
+export const messageSchema = SchemaFactory.createForClass(Messages);

@@ -1,19 +1,21 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { MessageSchema } from "./message.schema";
+import { Messages } from "./message.schema";
 import mongoose, { Model } from 'mongoose'
 import { MessageDto, UpdateMessageDto } from "./message.dto";
 import { UsersSchema } from "src/Users/users.schema";
 import { WorkspaceSchema } from "src/Workspace/workspace.schema";
 import { CacheService } from "src/Shared/cache/cache.service";
+import { AuditPublisher } from "src/Shared/audit-logs/auditPublisher.service";
 
 
 @Injectable()
 export class MessageService {
-    constructor(@InjectModel(MessageSchema.name) private messageModel: Model<MessageSchema>,
+    constructor(@InjectModel(Messages.name) private messageModel: Model<Messages>,
         @InjectModel(UsersSchema.name) private userModel: Model<UsersSchema>,
         @InjectModel(WorkspaceSchema.name) private workspaceModel: Model<WorkspaceSchema>,
-        private readonly cacheService: CacheService) { }
+        private readonly cacheService: CacheService,
+        private readonly auditPublisher: AuditPublisher) { }
 
     //get all message--------------------------------------------------------
     async getAllMessage() {
@@ -50,6 +52,15 @@ export class MessageService {
             }
             const newMessage = new this.messageModel({ createdBy: req.users._id, ...messageDto });
             const savedMessage = await newMessage.save();
+            const logs = {
+                actionTakenBy: savedMessage.createdBy,
+                actionDoneAt: Date.now().toString(),
+                actionTakenOn: savedMessage._id,
+                action: 'Added',
+                resource: 'Messages',
+                workspaceId: savedMessage.workspaceId
+            };
+            this.auditPublisher.publishLogs(logs);
             this.cacheService.set(`message:${savedMessage._id}`, savedMessage, 120);
             return savedMessage
         }
@@ -65,6 +76,15 @@ export class MessageService {
             const deleteMessage = await this.messageModel.findOneAndDelete({ _id: messageId }).exec();
             if (!deleteMessage) throw new NotFoundException("message not found");
             await this.cacheService.del(`message:${messageId}`);
+            const logs = {
+                actionTakenBy: deleteMessage.createdBy,
+                actionDoneAt: Date.now().toString(),
+                actionTakenOn: deleteMessage._id,
+                action: 'Deleted',
+                resource: 'Messages',
+                workspaceId: deleteMessage.workspaceId
+            };
+            this.auditPublisher.publishLogs(logs);
             return deleteMessage;
         }
         catch (err) {
@@ -89,6 +109,15 @@ export class MessageService {
             const editMessage = await this.messageModel.findOneAndUpdate({ _id: messageId }, updateOps, { returnDocument: "after" }).exec();
             if (!editMessage) throw new NotFoundException("message not found");
             this.cacheService.set(`message:${editMessage._id}`, editMessage, 120);
+            const logs = {
+                actionTakenBy: editMessage.createdBy,
+                actionDoneAt: Date.now().toString(),
+                actionTakenOn: editMessage._id,
+                action: 'Updated',
+                resource: 'Messages',
+                workspaceId: editMessage.workspaceId
+            };
+            this.auditPublisher.publishLogs(logs);
             return editMessage;
         }
         catch (err) {

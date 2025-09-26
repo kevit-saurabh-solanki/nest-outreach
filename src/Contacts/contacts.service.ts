@@ -1,19 +1,21 @@
 import { ConflictException, Inject, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { ContactsSchema } from "./contacts.schema";
+import { Contacts } from "./contacts.schema";
 import mongoose, { Model, mongo } from "mongoose"
 import { ContactsDto, UpdateContactsDto } from "./contacts.dto";
 import { UsersSchema } from "src/Users/users.schema";
 import { WorkspaceSchema } from "src/Workspace/workspace.schema";
 import { count } from "console";
 import { CacheService } from "src/Shared/cache/cache.service";
+import { AuditPublisher } from "src/Shared/audit-logs/auditPublisher.service";
 
 @Injectable()
 export class ContactsService {
-    constructor(@InjectModel(ContactsSchema.name) private contactModel: Model<ContactsSchema>,
+    constructor(@InjectModel(Contacts.name) private contactModel: Model<Contacts>,
         @InjectModel(UsersSchema.name) private userModel: Model<UsersSchema>,
         @InjectModel(WorkspaceSchema.name) private workspaceModel: Model<WorkspaceSchema>,
-        private cacheService: CacheService) { }
+        private cacheService: CacheService,
+        private auditPublisher: AuditPublisher) { }
 
     //get all contacts------------------------------------------------------------
     async getAllContacts() {
@@ -50,6 +52,15 @@ export class ContactsService {
         const savedContact = await newContact.save();
 
         this.cacheService.set(`contact:${savedContact._id}`, savedContact, 120);
+         const logs = {
+            actionTakenBy: savedContact.createdBy,
+            actionDoneAt: Date.now().toString(),
+            actionTakenOn: savedContact._id,
+            action: 'Added',
+            resource: 'Contacts',
+            workspaceId: savedContact.workspaceId
+        };
+        this.auditPublisher.publishLogs(logs);
         return savedContact;
     }
 
@@ -58,6 +69,15 @@ export class ContactsService {
         const deleteContact = await this.contactModel.findOneAndDelete({ _id: contactId }, { returnDocument: "after" }).exec();
         if (!deleteContact) throw new NotFoundException("Contact not found");
         this.cacheService.del(`contact:${deleteContact._id}`);
+        const logs = {
+            actionTakenBy: deleteContact.createdBy,
+            actionDoneAt: Date.now().toString(),
+            actionTakenOn: deleteContact._id,
+            action: 'Deleted',
+            resource: 'Contacts',
+            workspaceId: deleteContact.workspaceId
+        };
+        this.auditPublisher.publishLogs(logs);
         return deleteContact;
     }
 
@@ -66,6 +86,15 @@ export class ContactsService {
         const editContact = await this.contactModel.findByIdAndUpdate({ _id: contactId }, { ...updateContactDto }, { returnDocument: "after" }).exec();
         if (!editContact) throw new NotFoundException("Contact not found");
         this.cacheService.set(`contact:${editContact._id}`, editContact, 120);
+        const logs = {
+            actionTakenBy: editContact.createdBy,
+            actionDoneAt: Date.now().toString(),
+            actionTakenOn: editContact._id,
+            action: 'Updated',
+            resource: 'Contacts',
+            workspaceId: editContact.workspaceId
+        };
+        this.auditPublisher.publishLogs(logs);
         return editContact;
     }
 
