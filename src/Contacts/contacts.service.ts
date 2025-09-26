@@ -1,6 +1,6 @@
 import { ConflictException, Inject, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { ContactsSchema } from "./contacts.schema";
+import { Contacts } from "./contacts.schema";
 import mongoose, { Model, mongo } from "mongoose"
 import { ContactsDto, UpdateContactsDto } from "./contacts.dto";
 import { UsersSchema } from "src/Users/users.schema";
@@ -11,7 +11,7 @@ import { AuditPublisher } from "src/Shared/audit-logs/auditPublisher.service";
 
 @Injectable()
 export class ContactsService {
-    constructor(@InjectModel(ContactsSchema.name) private contactModel: Model<ContactsSchema>,
+    constructor(@InjectModel(Contacts.name) private contactModel: Model<Contacts>,
         @InjectModel(UsersSchema.name) private userModel: Model<UsersSchema>,
         @InjectModel(WorkspaceSchema.name) private workspaceModel: Model<WorkspaceSchema>,
         private cacheService: CacheService,

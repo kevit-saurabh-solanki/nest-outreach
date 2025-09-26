@@ -2,7 +2,7 @@ import { Module } from "@nestjs/common";
 import { ContactsControl } from "./contacts.controller";
 import { ContactsService } from "./contacts.service";
 import { MongooseModule } from "@nestjs/mongoose";
-import { contactsSchema, ContactsSchema } from "./contacts.schema";
+import { contactsSchema, Contacts } from "./contacts.schema";
 import { usersSchema, UsersSchema } from "src/Users/users.schema";
 import { workspaceSchema, WorkspaceSchema } from "src/Workspace/workspace.schema";
 import { AuthModule } from "src/Auth/auth.module";
@@ -13,7 +13,7 @@ import { AuditPublisher } from "src/Shared/audit-logs/auditPublisher.service";
 @Module({
     imports: [MongooseModule.forFeature([
         {
-            name: ContactsSchema.name,
+            name: Contacts.name,
             schema: contactsSchema
         },
         {

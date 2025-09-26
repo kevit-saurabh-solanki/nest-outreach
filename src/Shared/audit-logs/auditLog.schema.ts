@@ -10,13 +10,16 @@ export class AuditLogSchema {
     @Prop({ required: true, default: Date.now().toString() })
     actionDoneAt: Date;
 
+    @Prop({ required: false, refPath: 'resource' })
+    actionTakenOn: mongoose.Schema.Types.ObjectId;
+
     @Prop({ required: true })
     action: string;
 
     @Prop({ required: true })
     resource: string;
 
-    @Prop({ required: true })
+    @Prop({ required: true, ref: 'WorkspaceSchema' })
     workspaceId: mongoose.Schema.Types.ObjectId;
 }
 

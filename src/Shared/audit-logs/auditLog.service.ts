@@ -20,7 +20,7 @@ export class AuditLogService {
                 },
                 {
                     path: 'actionTakenBy',
-                    select: 'email, _id'
+                    select: 'email _id'
                 }
             ]).exec();
             return logs;

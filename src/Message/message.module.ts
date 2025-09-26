@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
-import { messageSchema, MessageSchema } from "./message.schema";
+import { messageSchema, Messages } from "./message.schema";
 import { usersSchema, UsersSchema } from "src/Users/users.schema";
 import { workspaceSchema, WorkspaceSchema } from "src/Workspace/workspace.schema";
 import { MessageControl } from "./message.controller";
@@ -12,7 +12,7 @@ import { CacheService } from "src/Shared/cache/cache.service";
 @Module({
     imports: [MongooseModule.forFeature([
         {
-            name: MessageSchema.name,
+            name: Messages.name,
             schema: messageSchema
         },
         {

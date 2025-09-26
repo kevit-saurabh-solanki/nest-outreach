@@ -1,13 +1,13 @@
 import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { CampaignSchema } from "./campaign.schema";
+import { Campaigns } from "./campaign.schema";
 import { Model } from "mongoose";
 import { UsersSchema } from "src/Users/users.schema";
 import { WorkspaceSchema } from "src/Workspace/workspace.schema";
 import mongoose from 'mongoose';
 import { CampaignDto, UpdateCampaignDto } from "./campaign.dto";
-import { ContactsSchema } from "src/Contacts/contacts.schema";
-import { MessageSchema } from "src/Message/message.schema";
+import { Contacts } from "src/Contacts/contacts.schema";
+import { Messages } from "src/Message/message.schema";
 
 interface RecentCampaign {
     name: string;
@@ -18,11 +18,11 @@ interface RecentCampaign {
 
 @Injectable()
 export class CampaignService {
-    constructor(@InjectModel(CampaignSchema.name) private campaignModel: Model<CampaignSchema>,
+    constructor(@InjectModel(Campaigns.name) private campaignModel: Model<Campaigns>,
         @InjectModel(UsersSchema.name) private userModel: Model<UsersSchema>,
         @InjectModel(WorkspaceSchema.name) private workspaceModel: Model<WorkspaceSchema>,
-        @InjectModel(ContactsSchema.name) private contactsModel: Model<ContactsSchema>,
-        @InjectModel(MessageSchema.name) private messageModel: Model<MessageSchema>) { }
+        @InjectModel(Contacts.name) private contactsModel: Model<Contacts>,
+        @InjectModel(Messages.name) private messageModel: Model<Messages>) { }
 
     //get all campaign--------------------------------------------------------
     async getAllCampaign() {
@@ -218,7 +218,7 @@ export class CampaignService {
             // 🔍 join with Message collection to get messageType
             {
                 $lookup: {
-                    from: "messageschemas", // collection name for MessageSchema
+                    from: "messageschemas", // collection name for Messages
                     localField: "messageId",
                     foreignField: "_id",
                     as: "message"

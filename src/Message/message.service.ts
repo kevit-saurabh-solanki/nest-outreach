@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { MessageSchema } from "./message.schema";
+import { Messages } from "./message.schema";
 import mongoose, { Model } from 'mongoose'
 import { MessageDto, UpdateMessageDto } from "./message.dto";
 import { UsersSchema } from "src/Users/users.schema";
@@ -10,7 +10,7 @@ import { CacheService } from "src/Shared/cache/cache.service";
 
 @Injectable()
 export class MessageService {
-    constructor(@InjectModel(MessageSchema.name) private messageModel: Model<MessageSchema>,
+    constructor(@InjectModel(Messages.name) private messageModel: Model<Messages>,
         @InjectModel(UsersSchema.name) private userModel: Model<UsersSchema>,
         @InjectModel(WorkspaceSchema.name) private workspaceModel: Model<WorkspaceSchema>,
         private readonly cacheService: CacheService) { }
