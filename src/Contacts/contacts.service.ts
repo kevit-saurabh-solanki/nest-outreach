@@ -51,7 +51,8 @@ export class ContactsService {
         const newContact = new this.contactModel({ createdBy: req.users._id, ...contactDto });
         const savedContact = await newContact.save();
 
-        this.cacheService.set(`contact:${savedContact._id}`, savedContact, 120);
+        const cacheKey = `contacts:workspaceId:${savedContact.workspaceId}:*`;
+        await this.cacheService.del(cacheKey);
          const logs = {
             actionTakenBy: savedContact.createdBy,
             actionDoneAt: Date.now().toString(),
@@ -68,7 +69,8 @@ export class ContactsService {
     async deleteContact(contactId: mongoose.Schema.Types.ObjectId) {
         const deleteContact = await this.contactModel.findOneAndDelete({ _id: contactId }, { returnDocument: "after" }).exec();
         if (!deleteContact) throw new NotFoundException("Contact not found");
-        this.cacheService.del(`contact:${deleteContact._id}`);
+        const cacheKey = `contacts:workspaceId:${deleteContact.workspaceId}:*`;
+        await this.cacheService.del(cacheKey);
         const logs = {
             actionTakenBy: deleteContact.createdBy,
             actionDoneAt: Date.now().toString(),
@@ -85,7 +87,8 @@ export class ContactsService {
     async editContact(contactId: mongoose.Schema.Types.ObjectId, { ...updateContactDto }: UpdateContactsDto) {
         const editContact = await this.contactModel.findByIdAndUpdate({ _id: contactId }, { ...updateContactDto }, { returnDocument: "after" }).exec();
         if (!editContact) throw new NotFoundException("Contact not found");
-        this.cacheService.set(`contact:${editContact._id}`, editContact, 120);
+        const cacheKey = `contacts:workspaceId:${editContact.workspaceId}:*`;
+        await this.cacheService.del(cacheKey);
         const logs = {
             actionTakenBy: editContact.createdBy,
             actionDoneAt: Date.now().toString(),
@@ -100,7 +103,8 @@ export class ContactsService {
 
     //get contact by workspace id------------------------------------------
     async getContactsByWorkspace(workspaceId: string, page: number = 1, limit: number = 10) {
-        return this.cacheService.wrap(`contacts:workspaceId:${workspaceId}`, async () => {
+        const cacheKey = `contacts:workspaceId:${workspaceId}:page:${page}:limit:${limit}`;
+        return this.cacheService.wrap(cacheKey, async () => {
             const skip = (page - 1) * limit;
 
             const contacts = await this.contactModel

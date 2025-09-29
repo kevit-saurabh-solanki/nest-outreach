@@ -61,8 +61,9 @@ export class MessageService {
                 workspaceId: savedMessage.workspaceId
             };
             this.auditPublisher.publishLogs(logs);
-            this.cacheService.set(`message:${savedMessage._id}`, savedMessage, 120);
-            return savedMessage
+            const cacheKey = `messages:workspaceId:${savedMessage.workspaceId}`;
+            await this.cacheService.del(cacheKey);
+            return savedMessage;
         }
         catch (err) {
             console.log(err);
@@ -75,7 +76,6 @@ export class MessageService {
         try {
             const deleteMessage = await this.messageModel.findOneAndDelete({ _id: messageId }).exec();
             if (!deleteMessage) throw new NotFoundException("message not found");
-            await this.cacheService.del(`message:${messageId}`);
             const logs = {
                 actionTakenBy: deleteMessage.createdBy,
                 actionDoneAt: Date.now().toString(),
@@ -85,6 +85,8 @@ export class MessageService {
                 workspaceId: deleteMessage.workspaceId
             };
             this.auditPublisher.publishLogs(logs);
+            const cacheKey = `messages:workspaceId:${deleteMessage.workspaceId}`;
+            await this.cacheService.del(cacheKey);
             return deleteMessage;
         }
         catch (err) {
@@ -108,7 +110,8 @@ export class MessageService {
             }
             const editMessage = await this.messageModel.findOneAndUpdate({ _id: messageId }, updateOps, { returnDocument: "after" }).exec();
             if (!editMessage) throw new NotFoundException("message not found");
-            this.cacheService.set(`message:${editMessage._id}`, editMessage, 120);
+            const cacheKey = `messages:workspaceId:${editMessage.workspaceId}`;
+            await this.cacheService.del(cacheKey);
             const logs = {
                 actionTakenBy: editMessage.createdBy,
                 actionDoneAt: Date.now().toString(),
@@ -128,7 +131,7 @@ export class MessageService {
 
     //get messages by workspace id------------------------------------------
     async getMessagesByWorkspace(workspaceId: string) {
-        return this.cacheService.wrap(`messages:workspace:${workspaceId}`, async () => {
+        return this.cacheService.wrap(`messages:workspaceId:${workspaceId}`, async () => {
             return await this.messageModel.find({ workspaceId }).exec();
         }, 120);
     }

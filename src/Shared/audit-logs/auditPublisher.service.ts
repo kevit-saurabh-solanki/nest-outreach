@@ -9,7 +9,7 @@ export class AuditPublisher {
         this.client = ClientProxyFactory.create({
             transport: Transport.RMQ,
             options: {
-                urls: ["amqp://localhost"],
+                urls: ["amqp://rabbitmq:5672"],
                 queue: 'audit_log',
                 queueOptions: { durable: true }
             }

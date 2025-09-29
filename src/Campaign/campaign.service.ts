@@ -69,7 +69,8 @@ export class CampaignService {
 
             const newCampaign = new this.campaignModel({ createdBy: req.users._id, ...campaignDto });
             const savedCampaign = await newCampaign.save();
-            this.cacheService.set(`campaign:${savedCampaign._id}`, savedCampaign, 120);
+            const cacheKey = `campaigns:workspaceId:${savedCampaign.workspaceId}:*`;
+            await this.cacheService.del(cacheKey);
             const logs = {
                 actionTakenBy: savedCampaign.createdBy,
                 actionDoneAt: Date.now().toString(),
@@ -91,7 +92,8 @@ export class CampaignService {
         try {
             const deleteCampaign = await this.campaignModel.findOneAndDelete({ _id: campaignId }).exec();
             if (!deleteCampaign) throw new NotFoundException("campaign not found");
-            this.cacheService.del(`campaign:${campaignId}`);
+            const cacheKey = `campaigns:workspaceId:${deleteCampaign.workspaceId}:*`;
+            await this.cacheService.del(cacheKey);
             const logs = {
                 actionTakenBy: deleteCampaign.createdBy,
                 actionDoneAt: Date.now().toString(),
@@ -126,7 +128,8 @@ export class CampaignService {
                 { new: true }
             );
             if (!editCampaign) throw new NotFoundException('campaign not found');
-            this.cacheService.set(`campaign:${campaignId}`, editCampaign, 120);
+            const cacheKey = `campaigns:workspaceId:${editCampaign.workspaceId}:*`;
+            await this.cacheService.del(cacheKey);
             const logs = {
                 actionTakenBy: editCampaign.createdBy,
                 actionDoneAt: Date.now().toString(),
@@ -143,8 +146,9 @@ export class CampaignService {
     }
 
     //get campaign by workspaceId--------------------------------------------------------------------------------------------------------
-    async getCampaignByWorkspace(workspaceId: string, page: number = 1, limit: number = 10) { 
-        return this.cacheService.wrap(`camapaigns:workspace:${workspaceId}`, async () => {
+    async getCampaignByWorkspace(workspaceId: string, page: number = 1, limit: number = 10) {
+        const cacheKey = `campaigns:workspaceId:${workspaceId}:page:${page}:limit:${limit}`;
+        return this.cacheService.wrap(cacheKey, async () => {
             const skip = (page - 1) * limit;
 
             const campaigns = await this.campaignModel
@@ -236,7 +240,8 @@ export class CampaignService {
         campaign.launchedAt = new Date();
         campaign.status = 'success';
 
-        this.cacheService.set(`campaign:${campaign._id}`, campaign, 120);
+        const cacheKey = `campaigns:workspaceId:${campaign.workspaceId}:*`;
+        await this.cacheService.del(cacheKey);
 
         // 7. Save and return
         return campaign.save();
