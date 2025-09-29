@@ -17,16 +17,11 @@ export class CacheService {
         return freshData;
     }
 
-    async set<T>(key: string, value: T, ttlSec = 120): Promise<void> {
-        await this.redisClient.set(key,  JSON.stringify(value), "EX", ttlSec);
-    }
-
-    async get<T>(key: string): Promise<T | null> {
-        const cached = await this.redisClient.get(key);
-        return cached ? JSON.parse(cached) : null;
-    }
-
     async del<T>(key: string): Promise<void> {
-        await this.redisClient.del(key);
+        const keys = await this.redisClient.keys(`${key}`);
+
+        if (keys.length > 0) {
+            await this.redisClient.del(...keys);
+        }
     }
 }

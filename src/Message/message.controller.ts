@@ -26,7 +26,7 @@ export class MessageControl {
     @Get('workspace/:workspaceId')
     @UseGuards(AuthGuard)
     async getMessages(@Param('workspaceId') workspaceId: string) {
-        return this.messageService.getMessagesByWorkspace(workspaceId);
+        return await this.messageService.getMessagesByWorkspace(workspaceId);
     }
 
     @Post()
